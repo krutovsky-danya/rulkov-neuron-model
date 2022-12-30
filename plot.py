@@ -39,3 +39,16 @@ def show_repeller_position(xs, ys, bounds):
     plt.fill_between(xs[mask], ys[mask])
     plt.plot(bounds[0], [0, 0])
     plt.show()
+
+
+def show_bifurcation_diagram(attractor, repeller, chaotic_points):
+    plt.figure(figsize=(14, 7))
+    plt.xlabel('$\\gamma$', size=20)
+    plt.ylabel('$x$', size=20, rotation=0)
+
+    plt.plot(*chaotic_points, '.', markersize=0.01, label='Хаотическая')
+    plt.plot(*repeller, label='Неустойчивая')
+    plt.plot(*attractor, label='Устойчивая')
+
+    plt.legend()
+    plt.show()
