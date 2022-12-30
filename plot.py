@@ -19,8 +19,8 @@ def show_stable_points(xs, gammas, bounds: Optional[np.ndarray] = None) -> None:
     ax2.plot(xs, gammas)
 
     if bounds is not None:
-        ax1.plot(bounds[1], bounds[0], 'o')
-        ax2.plot(bounds[0], bounds[1], 'o')
+        ax1.plot(*bounds[::-1], 'o')
+        ax2.plot(*bounds, 'o')
 
     fig.suptitle("Stable points")
     plt.show()
