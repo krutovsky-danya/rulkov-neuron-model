@@ -24,3 +24,18 @@ def show_stable_points(xs, gammas, bounds: Optional[np.ndarray] = None) -> None:
 
     fig.suptitle("Stable points")
     plt.show()
+
+
+def show_repeller_position(xs, ys, bounds):
+    bx1, bx2 = bounds[0]
+    mask = (bx1 < xs) & (xs < bx2)
+
+    plt.figure(figsize=(14, 7))
+    plt.ylabel("$\\gamma_x'$", size=20, rotation=0)
+    plt.xlabel('$x$', size=20, rotation=0)
+    plt.title("Where is repeller")
+    plt.plot([xs[0], xs[-1]], [0, 0], 'k')
+    plt.plot(xs, ys)
+    plt.fill_between(xs[mask], ys[mask])
+    plt.plot(bounds[0], [0, 0])
+    plt.show()

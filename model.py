@@ -22,9 +22,9 @@ def get_repeller_bounds(xs, alpha: float = 4.1) -> np.ndarray:
 
     bounds = []
 
-    for x, y1, y2 in zip(xs, ys, ys[1:]):
+    for x1, x2, y1, y2 in zip(xs, xs[1:], ys, ys[1:]):
         if y1 * y2 < 0:
-            bounds.append(x)
+            bounds.append((x1 + x2) / 2)
 
     bounds = np.array(bounds)
 
