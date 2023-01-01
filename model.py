@@ -31,9 +31,8 @@ def get_repeller_bounds(xs, alpha: float = 4.1) -> np.ndarray:
     return np.array([bounds, invert_stable_point(bounds)])
 
 
-def get_chaotic_points_cloud(gammas, skip_points=2000, points_per_gamma=10000, x0=0, reset_x=False):
+def get_chaotic_points_cloud(gammas, skip_points=2000, points_per_gamma=1000, x0=0, reset_x=False) -> np.ndarray:
     chaotic_points = []
-    grouped_chaotic_points = []
 
     x = x0
     for j, gamma in enumerate(gammas):
@@ -42,15 +41,20 @@ def get_chaotic_points_cloud(gammas, skip_points=2000, points_per_gamma=10000, x
         for _ in range(skip_points):
             x = f(x, gamma=gamma)
 
-        group = np.zeros(points_per_gamma)
-
         for i in range(points_per_gamma):
             x = f(x, gamma=gamma)
             chaotic_points.append([gamma, x])
-            group[i] = x
 
-        grouped_chaotic_points.append((gamma, group))
+    return np.array(chaotic_points).T
 
-    chaotic_points = np.array(chaotic_points)
 
-    return chaotic_points.T, grouped_chaotic_points
+def group_chaotic_points(chaotic_points):
+    grouped_chaotic = {}
+
+    for gamma, x in chaotic_points.T:
+        if gamma not in grouped_chaotic:
+            grouped_chaotic[gamma] = list()
+        grouped_chaotic[gamma].append(x)
+
+    for gamma, xs in grouped_chaotic:
+        yield gamma, np.array(xs)

@@ -32,9 +32,11 @@ def main():
 
     gamma_bound = model.invert_stable_point(x_bounds[1])
     chaotic_gammas = np.linspace(gamma_bound, 1, 600)
-    chaotic_points, grouped_chaotic_points = model.get_chaotic_points_cloud(chaotic_gammas)
+    chaotic_points = model.get_chaotic_points_cloud(chaotic_gammas)
 
     plot.show_bifurcation_diagram((attractor_ys, attractor_xs), (repeller_ys, repeller_xs), chaotic_points)
+
+    grouped_chaotic_points = list(model.group_chaotic_points(chaotic_points))
 
 
 if __name__ == '__main__':
