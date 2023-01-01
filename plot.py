@@ -54,11 +54,11 @@ def show_bifurcation_diagram(attractor, repeller, chaotic_points):
     plt.show()
 
 
-def show_lyapunov_exponent(chaotic, stable):
+def show_lyapunov_exponent(chaotic, attractor):
     plt.figure(figsize=(20, 10))
 
     plt.plot(*chaotic, label='Неустойчивой')
-    plt.plot(*stable, label='Устойчивой')
+    plt.plot(*attractor, label='Устойчивой')
     plt.plot(chaotic[0, [0, -1]], np.zeros(2))
 
     plt.xlabel('$\\gamma$', size=20)
