@@ -1,3 +1,5 @@
+from typing import Generator, Tuple, Any
+
 import numpy as np
 
 
@@ -48,7 +50,7 @@ def get_chaotic_points_cloud(gammas, skip_points=2000, points_per_gamma=1000, x0
     return np.array(chaotic_points).T
 
 
-def group_chaotic_points(chaotic_points):
+def group_chaotic_points(chaotic_points: np.ndarray) -> Generator[Tuple[float, np.ndarray], None, Any]:
     grouped_chaotic = {}
 
     for gamma, x in chaotic_points.T:
@@ -56,5 +58,17 @@ def group_chaotic_points(chaotic_points):
             grouped_chaotic[gamma] = list()
         grouped_chaotic[gamma].append(x)
 
-    for gamma, xs in grouped_chaotic:
+    for gamma, xs in grouped_chaotic.items():
         yield gamma, np.array(xs)
+
+
+def get_lyapunov_exponent(grouped_points):
+    lyapunov_exponent = []
+
+    for gamma, points in grouped_points:
+        derivatives = f_(points)
+        modules = np.abs(derivatives)
+        logs = np.log(modules)
+        lyapunov_exponent.append([gamma, np.mean(logs)])
+
+    return np.array(lyapunov_exponent).T
