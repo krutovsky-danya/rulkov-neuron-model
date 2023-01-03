@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import model
 import plot
@@ -95,10 +95,10 @@ def show_1d_graphics(show_graphics=False):
 
 
 def show_bifurcation_diagram_2d(gamma: float, start, sigmas):
-    points_restarting = model.get_points_by_sigmas(start, gamma, sigmas, skip_count=500, steps_count=20)
+    points_restarting = model.get_points_by_sigmas(start, gamma, sigmas)
     restarting = model.get_parametrized_points(sigmas, points_restarting)
 
-    points_continuing = model.get_points_by_sigmas(np.zeros(2), gamma, sigmas, False, steps_count=20, skip_count=500)
+    points_continuing = model.get_points_by_sigmas(np.zeros(2), gamma, sigmas)
     continuing = model.get_parametrized_points(sigmas, points_continuing)
 
     plot.show_bifurcation_diagram_2d(gamma, restarting, continuing)
@@ -107,7 +107,7 @@ def show_bifurcation_diagram_2d(gamma: float, start, sigmas):
 def show_2d_graphics(show_graphics=False):
     gamma = 0.3
     start = np.array([1.2, 1])
-    sigmas = np.linspace(0, 0.48, 500)
+    sigmas = np.linspace(0.48, 0, 1000)
 
     show_bifurcation_diagram_2d(gamma, start, sigmas)
 

@@ -125,7 +125,7 @@ def get_points(point: np.ndarray, gamma: float, sigma=0.1, steps_count=100, skip
 
 
 def get_points_by_sigmas(origin: np.ndarray, gamma: float, sigmas: np.ndarray,
-                         restart=True, steps_count=100, skip_count=0) -> np.ndarray:
+                         restart=False, steps_count=20, skip_count=500) -> np.ndarray:
     trajectories = np.zeros((len(sigmas), 2, steps_count))
 
     point = origin
