@@ -67,3 +67,26 @@ def show_lyapunov_exponent(chaotic, attractor):
     plt.legend()
 
     plt.show()
+
+
+def show_phase_portraits(gamma, graphic, sequences, leaders):
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig.set_size_inches(18, 8)
+
+    for xs, (x, y) in zip(sequences, leaders):
+        ax1.plot(x, y)
+        ax2.plot(xs)
+
+    xs, ys = graphic
+    ax1.plot(*graphic)
+    ax1.plot(xs, xs)
+    ax1.set_title("Iterations")
+    ax1.set_xlabel("$x_t$", size=20)
+    ax1.set_ylabel("$x_{t+1}$", size=20, rotation=0)
+
+    ax2.set_title("Time series")
+    ax2.set_xlabel("$t$", size=20)
+    ax2.set_ylabel("$x_t$", size=20, rotation=0)
+
+    fig.suptitle(f"Фазовый портрет $\\gamma={gamma}$")
+    plt.show()

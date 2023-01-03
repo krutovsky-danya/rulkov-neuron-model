@@ -72,3 +72,32 @@ def get_lyapunov_exponent(grouped_points):
         lyapunov_exponent.append([gamma, np.mean(logs)])
 
     return np.array(lyapunov_exponent).T
+
+
+def get_x_sequence(gamma: float, x0: float, steps_count=100, skip_count=0):
+    xs = np.zeros(steps_count)
+
+    x = x0
+    for i in range(skip_count):
+        x = f(x, gamma=gamma)
+
+    xs[0] = x
+    for i in range(1, steps_count):
+        xs[i] = x = f(x, gamma=gamma)
+
+    return xs
+
+
+def get_leader(xs):
+    steps_count = len(xs)
+
+    x = np.zeros(steps_count * 2)
+    y = np.zeros(steps_count * 2)
+
+    y[0::2] = xs
+    y[1::2] = xs
+
+    x[0] = xs[0]
+    x[1:] = y[:-1]
+
+    return x, y
