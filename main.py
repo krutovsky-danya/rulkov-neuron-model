@@ -45,6 +45,27 @@ def show_lyapunov(chaotic_points, attractor, show_graphics=False):
         plot.show_lyapunov_exponent(chaotic_lyapunov_exponent, attractor_lyapunov_exponent)
 
 
+def get_sequence_generator(gamma, steps_count=100, skip_count=0):
+    def func(x):
+        return model.get_x_sequence(gamma, x, steps_count, skip_count)
+
+    return func
+
+
+def show_portraits(gamma, *starts, steps_count=100, skip_count=0):
+    sequence_func = get_sequence_generator(gamma, steps_count, skip_count)
+    sequences = list(map(sequence_func, starts))
+    leaders = map(model.get_leader, sequences)
+
+    x_min = min(map(min, sequences))
+    x_max = max(map(max, sequences))
+
+    xs = np.linspace(x_min, x_max)
+    ys = model.f(xs, gamma=gamma)
+
+    plot.show_phase_portraits(gamma, (xs, ys), sequences, leaders)
+
+
 def main(show_graphics=False):
     x_min = -4
 
@@ -55,7 +76,12 @@ def main(show_graphics=False):
 
     attractor, chaotic_points = show_bifurcation(show_graphics, bounds[0], x_min)
 
-    show_lyapunov(chaotic_points, zip(*attractor), show_graphics)
+    show_lyapunov(chaotic_points, zip(*attractor[::-1]), show_graphics)
+
+    if show_graphics:
+        show_portraits(-3.3, -3.1, -0.8, 0)
+        show_portraits(-3, -3.1, -1.09, 0.4)
+        show_portraits(-3.3, -3.1, -1.09, 0.5)
 
 
 if __name__ == '__main__':
