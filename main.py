@@ -66,7 +66,20 @@ def show_portraits(gamma, *starts, steps_count=100, skip_count=0):
     plot.show_phase_portraits(gamma, (xs, ys), sequences, leaders)
 
 
-def main(show_graphics=False):
+def show_several_phase_portraits(show_graphics):
+    if not show_graphics:
+        return
+    show_portraits(-3.3, -3.1, -0.8, 0)
+    show_portraits(-3, -3.1, -1.09, 0.4)
+    show_portraits(-3.3, -3.1, -1.09, 0.5)
+    # show_portraits(-3.55, 0.5, steps_count=20, skip_count=150)
+    # show_portraits(-3.4875, 0.5, steps_count=20, skip_count=150)
+    # show_portraits(-3.494925, 0.5, steps_count=24, skip_count=650)
+    # show_portraits(-3.4949, 0.5, steps_count=20, skip_count=1150)
+    # show_portraits(-3.3, 0.5, steps_count=60, skip_count=10000)
+
+
+def show_1d_graphics(show_graphics=False):
     x_min = -4
 
     xs = np.linspace(x_min, 1, 500)
@@ -78,10 +91,11 @@ def main(show_graphics=False):
 
     show_lyapunov(chaotic_points, zip(*attractor[::-1]), show_graphics)
 
-    if show_graphics:
-        show_portraits(-3.3, -3.1, -0.8, 0)
-        show_portraits(-3, -3.1, -1.09, 0.4)
-        show_portraits(-3.3, -3.1, -1.09, 0.5)
+    show_several_phase_portraits(show_graphics)
+
+
+def main():
+    show_1d_graphics(False)
 
 
 if __name__ == '__main__':
