@@ -57,8 +57,8 @@ def show_portraits(gamma, *starts, steps_count=100, skip_count=0):
     sequences = list(map(sequence_func, starts))
     leaders = map(model.get_leader, sequences)
 
-    x_min = min(map(min, sequences))
-    x_max = max(map(max, sequences))
+    x_min = min(map(min, sequences)) - 0.5
+    x_max = max(map(max, sequences)) + 0.5
 
     xs = np.linspace(x_min, x_max)
     ys = model.f(xs, gamma=gamma)
