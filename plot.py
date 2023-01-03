@@ -93,6 +93,7 @@ def show_phase_portraits(gamma, graphic, sequences, leaders):
 
 
 def show_bifurcation_diagram_2d(gamma: float, restarting, continuing):
+    plt.figure(figsize=(20, 10))
     plt.plot(*restarting, '.', markersize=0.7)
     plt.plot(*continuing, '.', markersize=0.7)
     plt.title(f"$\\gamma={gamma:.4f}$", size=20)
