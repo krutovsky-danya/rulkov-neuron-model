@@ -1,4 +1,4 @@
-from typing import Generator, Tuple, Any
+from typing import Generator, List, Tuple, Any
 
 import numpy as np
 
@@ -62,7 +62,7 @@ def group_chaotic_points(chaotic_points: np.ndarray) -> Generator[Tuple[float, n
         yield gamma, np.array(xs)
 
 
-def get_lyapunov_exponent(grouped_points):
+def get_lyapunov_exponent(grouped_points) -> np.ndarray:
     lyapunov_exponent = []
 
     for gamma, points in grouped_points:
@@ -101,3 +101,48 @@ def get_leader(xs):
     x[1:] = y[:-1]
 
     return x, y
+
+
+COUPLING = np.array([[-1, 1], [1, -1]])
+
+
+def same_coupling_f(point: np.ndarray, alfa=4.1, gamma=0.8, sigma=0.1) -> np.ndarray:
+    move: np.ndarray = f(point, alfa, gamma)
+    return move + sigma * COUPLING @ point
+
+
+def get_points(point: np.ndarray, gamma: float, sigma=0.1, steps_count=100, skip_count=0):
+    for i in range(skip_count):
+        point = same_coupling_f(point, gamma=gamma, sigma=sigma)
+
+    trace = np.zeros((steps_count, 2))
+
+    trace[0] = point
+    for i in range(1, steps_count):
+        trace[i] = point = same_coupling_f(point, gamma=gamma, sigma=sigma)
+
+    return trace.T
+
+
+def get_points_by_sigmas(origin: np.ndarray, gamma: float, sigmas: np.ndarray,
+                         restart=True, steps_count=100, skip_count=0) -> np.ndarray:
+    trajectories = np.zeros((len(sigmas), 2, steps_count))
+
+    point = origin
+    for i, sigma in enumerate(sigmas):
+        points = get_points(point, gamma, sigma, steps_count, skip_count)
+        point = origin if restart else points[:, -1]
+        trajectories[i] = points
+
+    return trajectories
+
+
+def get_parametrized_points(sigmas, points: np.ndarray, dim=0):
+    sigmas_count, _, xs_count = points.shape
+    parametrized = np.zeros((sigmas_count * xs_count, 2))
+    for i, (trace, sigma) in enumerate(zip(points, sigmas)):
+        xs = trace[dim]
+        for j, x in enumerate(xs):
+            parametrized[i * xs_count + j] = np.array([sigma, x])
+
+    return np.array(parametrized).T

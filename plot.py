@@ -90,3 +90,12 @@ def show_phase_portraits(gamma, graphic, sequences, leaders):
 
     fig.suptitle(f"Фазовый портрет $\\gamma={gamma}$")
     plt.show()
+
+
+def show_bifurcation_diagram_2d(gamma: float, restarting, continuing):
+    plt.plot(*restarting, '.', markersize=0.7)
+    plt.plot(*continuing, '.', markersize=0.7)
+    plt.title(f"$\\gamma={gamma:.4f}$", size=20)
+    plt.xlabel('$\\sigma$', size=20)
+    plt.ylabel('$x$', size=20, rotation=0)
+    plt.show()
