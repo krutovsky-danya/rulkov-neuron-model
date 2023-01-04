@@ -105,7 +105,7 @@ def show_bifurcation_diagram_2d(gamma: float, start, sigmas):
     plot.show_bifurcation_diagram_2d(gamma, restarting, continuing)
 
 
-def show_attraction_pool(gamma, sigma, x_min, x_max, cpi, steps_count=16, filename=None):
+def show_attraction_pool(gamma, sigma, x_min, x_max, cpi, steps_count=16, filename=None, show=True):
     coords = np.linspace(x_min, x_max, cpi)
 
     heatmap, last_points = model.get_attraction_pool(gamma, sigma, coords, steps_count, 2000)
@@ -120,7 +120,7 @@ def show_attraction_pool(gamma, sigma, x_min, x_max, cpi, steps_count=16, filena
 
     extent = [x_min, x_max, x_min, x_max]
 
-    plot.show_attraction_pool(gamma, sigma, heatmap, extent, points, filename=filename)
+    plot.show_attraction_pool(gamma, sigma, heatmap, extent, points, filename=filename, show=show)
 
 
 def show_2d_graphics(show_graphics=False):
@@ -133,13 +133,13 @@ def show_2d_graphics(show_graphics=False):
         show_attraction_pool(0.3, 0.1, 0, 4, 100, 4)
 
 
-def build_attraction_pool_movie():
+def build_attraction_pool_movie(show=True):
     s = 0.1
     filenames = []
 
     for i, g in enumerate(np.linspace(-1, -1.2, 201)):
         filename = f'images/image_{i}.png'
-        show_attraction_pool(g, s, -2, 6, 300, filename=filename)
+        show_attraction_pool(g, s, -2, 6, 300, filename=filename, show=show)
         filenames.append(filename)
 
     animation.build_video("animations/from_gamma.mov", filenames)

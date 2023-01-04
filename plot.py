@@ -102,7 +102,7 @@ def show_bifurcation_diagram_2d(gamma: float, restarting, continuing):
     plt.show()
 
 
-def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, *trajectories, filename=None):
+def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, *trajectories, filename=None, show=True):
     plt.figure(figsize=(10, 10))
     fig, ax = plt.subplots()
     im = ax.imshow(cycles_map[::-1], extent=extent)
@@ -113,4 +113,7 @@ def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, *trajec
     plt.ylabel('$y$', size=20, rotation=0)
     if filename is not None:
         plt.savefig(filename)
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
