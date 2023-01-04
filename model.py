@@ -1,4 +1,4 @@
-from typing import Generator, List, Tuple, Any
+from typing import Generator, Tuple, Any
 
 import numpy as np
 
@@ -146,3 +146,23 @@ def get_parametrized_points(sigmas, points: np.ndarray, dim=0):
             parametrized[i * xs_count + j] = np.array([sigma, x])
 
     return np.array(parametrized).T
+
+
+def get_attraction_pool(gamma: float, sigma: float, x_set: np.ndarray, steps_count=16, skip_count=100):
+    size = len(x_set)
+    cycles_map = np.zeros((size, size))
+    last_points = np.zeros((size, size, steps_count, 2))
+
+    for j, y in enumerate(x_set):
+        for i, x in enumerate(x_set):
+            point = np.array([x, y])
+            points = get_points(point, gamma, sigma, steps_count, skip_count)
+            last_points[i, j] = points.T
+            xs, ys = points
+            std = np.std(xs - ys)
+            if std < 1e-2:
+                cycles_map[i, j] = -1
+            else:
+                cycles_map[i, j] = 1
+
+    return cycles_map, last_points
