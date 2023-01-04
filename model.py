@@ -1,20 +1,24 @@
 from typing import Generator, Tuple, Any
-
+from numba import njit
 import numpy as np
 
 
+@njit()
 def f(x, alpha: float = 4.1, gamma: float = -3):
     return alpha / (1 + x ** 2) + gamma
 
 
+@njit()
 def f_(x, alpha: float = 4.1):
     return (2 * alpha * x) / ((1 + x ** 2) ** 2)
 
 
+@njit()
 def invert_stable_point(x, alpha: float = 4.1):
     return x - alpha / (1 + x ** 2)
 
 
+@njit()
 def invert_stable_point_(x, alpha: float = 4.1):
     return 1 + f_(x, alpha)
 
@@ -33,6 +37,7 @@ def get_repeller_bounds(xs, alpha: float = 4.1) -> np.ndarray:
     return np.array([bounds, invert_stable_point(bounds)])
 
 
+@njit()
 def get_chaotic_points_cloud(gammas, skip_points=2000, points_per_gamma=1000, x0=0, reset_x=False) -> np.ndarray:
     chaotic_points = []
 
@@ -74,6 +79,7 @@ def get_lyapunov_exponent(grouped_points) -> np.ndarray:
     return np.array(lyapunov_exponent).T
 
 
+@njit()
 def get_x_sequence(gamma: float, x0: float, steps_count=100, skip_count=0):
     xs = np.zeros(steps_count)
 
@@ -88,6 +94,7 @@ def get_x_sequence(gamma: float, x0: float, steps_count=100, skip_count=0):
     return xs
 
 
+@njit()
 def get_leader(xs):
     steps_count = len(xs)
 
@@ -106,12 +113,16 @@ def get_leader(xs):
 COUPLING = np.array([[-1, 1], [1, -1]])
 
 
+@njit()
 def same_coupling_f(point: np.ndarray, alfa=4.1, gamma=0.8, sigma=0.1) -> np.ndarray:
     move: np.ndarray = f(point, alfa, gamma)
-    return move + sigma * COUPLING @ point
+    x, y = point
+    delta = y - x
+    return move + sigma * np.array([delta, -delta])
 
 
-def get_points(point: np.ndarray, gamma: float, sigma=0.1, steps_count=100, skip_count=0):
+@njit()
+def get_points(point: np.ndarray, gamma: float, sigma=0.1, steps_count=100, skip_count=0) -> np.ndarray:
     for i in range(skip_count):
         point = same_coupling_f(point, gamma=gamma, sigma=sigma)
 
@@ -124,6 +135,7 @@ def get_points(point: np.ndarray, gamma: float, sigma=0.1, steps_count=100, skip
     return trace.T
 
 
+@njit()
 def get_points_by_sigmas(origin: np.ndarray, gamma: float, sigmas: np.ndarray,
                          restart=False, steps_count=20, skip_count=500) -> np.ndarray:
     trajectories = np.zeros((len(sigmas), 2, steps_count))
@@ -137,6 +149,7 @@ def get_points_by_sigmas(origin: np.ndarray, gamma: float, sigmas: np.ndarray,
     return trajectories
 
 
+@njit()
 def get_parametrized_points(sigmas, points: np.ndarray, dim=0):
     sigmas_count, _, xs_count = points.shape
     parametrized = np.zeros((sigmas_count * xs_count, 2))
@@ -145,9 +158,10 @@ def get_parametrized_points(sigmas, points: np.ndarray, dim=0):
         for j, x in enumerate(xs):
             parametrized[i * xs_count + j] = np.array([sigma, x])
 
-    return np.array(parametrized).T
+    return parametrized.T
 
 
+@njit()
 def get_attraction_pool(gamma: float, sigma: float, x_set: np.ndarray, steps_count=16, skip_count=100):
     size = len(x_set)
     cycles_map = np.zeros((size, size))
