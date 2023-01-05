@@ -105,22 +105,33 @@ def show_bifurcation_diagram_2d(gamma: float, start, sigmas):
     plot.show_bifurcation_diagram_2d(gamma, restarting, continuing)
 
 
+def separate_points(last_points, cpi, steps_count):
+    lined = np.reshape(last_points, (cpi * cpi * steps_count, 2))
+    rounded = np.around(lined, 5)
+    points, counts = np.unique(rounded, return_counts=True, axis=0)
+
+    mask = counts > 1
+
+    popular_points = points[mask].T
+    unpopular_points = points[~mask]
+
+    limit = min(len(unpopular_points), cpi)
+    np.random.shuffle(unpopular_points)
+    some_points = unpopular_points[:limit].T
+
+    return popular_points, some_points
+
+
 def show_attraction_pool(gamma, sigma, x_min, x_max, cpi, steps_count=16, filename=None, show=True):
     coords = np.linspace(x_min, x_max, cpi)
 
     heatmap, last_points = model.get_attraction_pool(gamma, sigma, coords, steps_count, 2000)
 
-    lined = np.reshape(last_points, (cpi * cpi * steps_count, 2))
-    rounded = np.around(lined, 5)
-    points = np.unique(rounded, axis=0)
-
-    limit = min(len(points), cpi * steps_count)
-    np.random.shuffle(points)
-    points = points[:limit].T
+    popular_points, some_points = separate_points(last_points, cpi, steps_count)
 
     extent = [x_min, x_max, x_min, x_max]
 
-    plot.show_attraction_pool(gamma, sigma, heatmap, extent, points, filename=filename, show=show)
+    plot.show_attraction_pool(gamma, sigma, heatmap, extent, popular_points, some_points, filename=filename, show=show)
 
 
 def show_2d_graphics(show_graphics=False):
@@ -145,6 +156,30 @@ def build_attraction_pool_movie(show=True):
     animation.build_video("animations/from_gamma.mov", filenames)
 
 
+def make_cool_zooming_movie():
+    s = 0.1
+    g = -1.1211
+    filenames = []
+
+    frames = 50
+    b1s = -np.logspace(np.log(1), np.log(0.9775), frames, base=np.e)
+    b2s = np.logspace(np.log(1 + 1), np.log(-0.9776 + 1), frames, base=np.e) - 1
+
+    for i, (b1, b2) in enumerate(zip(b1s, b2s)):
+        filename = f'images/image_zoom_{i}.png'
+        show_attraction_pool(g, s, b1, b2, 300, filename=filename, show=True)
+        filenames.append(filename)
+
+    animation.build_video("animations/zooming.mov", filenames)
+
+
+def make_cool_pools():
+    show_attraction_pool(-1.1211, 0.1, -10, 10, 800, filename='big_special.png', show=True)
+    show_attraction_pool(-1.1211, 0.1, -1, -0.99, 800, filename='super_small_special.png', show=True)
+    show_attraction_pool(-1.1211, 0.1, -100, -1, 800, filename='very_big_special.png', show=True)
+    # x in [1.25, 1.75]; y in [-0.5, 0.5]
+
+
 def main():
     show_1d_graphics(True)
     show_2d_graphics(True)
@@ -152,4 +187,6 @@ def main():
 
 if __name__ == '__main__':
     # main()
-    build_attraction_pool_movie()
+    # x in [1.25, 1.75]; y in [-0.5, 0.5]
+
+    show_attraction_pool(-1.1211, 0.1, -1, 1, 200, 30)
