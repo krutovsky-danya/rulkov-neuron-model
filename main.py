@@ -110,16 +110,11 @@ def separate_points(last_points, cpi, steps_count):
     rounded = np.around(lined, 5)
     points, counts = np.unique(rounded, return_counts=True, axis=0)
 
-    mask = counts > 1
+    final_points = points.T
 
-    popular_points = points[mask].T
-    unpopular_points = points[~mask]
+    co_mask = final_points[0] == final_points[1]
 
-    limit = min(len(unpopular_points), cpi)
-    np.random.shuffle(unpopular_points)
-    some_points = unpopular_points[:limit].T
-
-    return popular_points, some_points
+    return final_points[:, co_mask], final_points[:, ~co_mask]
 
 
 def show_attraction_pool(gamma, sigma, x_min, x_max, cpi, steps_count=16, filename=None, show=True):
@@ -127,11 +122,11 @@ def show_attraction_pool(gamma, sigma, x_min, x_max, cpi, steps_count=16, filena
 
     heatmap, last_points = model.get_attraction_pool(gamma, sigma, coords, steps_count, 2000)
 
-    popular_points, some_points = separate_points(last_points, cpi, steps_count)
+    co, anti = separate_points(last_points, cpi, steps_count)
 
     extent = [x_min, x_max, x_min, x_max]
 
-    plot.show_attraction_pool(gamma, sigma, heatmap, extent, popular_points, some_points, filename=filename, show=show)
+    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, filename=filename, show=show)
 
 
 def show_2d_graphics(show_graphics=False):
@@ -189,4 +184,5 @@ if __name__ == '__main__':
     # main()
     # x in [1.25, 1.75]; y in [-0.5, 0.5]
 
-    show_attraction_pool(-1.1211, 0.1, -1, 1, 200, 30)
+    show_attraction_pool(-1.1211, 0.1, -1, 1, 400, 30, filename="important/with_attractors.png")
+    show_attraction_pool(-1.1211, 0.1, -2, 6, 400, 30, filename="important/bigger_with_attractors.png")
