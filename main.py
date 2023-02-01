@@ -121,7 +121,7 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
     gamma = config.gamma
     sigma = config.sigma
 
-    heatmap, last_points = model.get_attraction_pool_from_config(config)
+    heatmap, last_points = model.get_attraction_pool(config)
 
     co, anti = separate_points(last_points, config.density, config.take)
 
@@ -139,7 +139,6 @@ def show_2d_graphics(show_graphics=False):
         config = model.AttractionPoolConfiguration(0.3, 0.1, (-1, 5), (-1, 5), 200, 200, 4)
         show_bifurcation_diagram_2d(gamma, start, sigmas)
         show_attraction_pool(config)
-        make_cool_pools()
 
 
 def build_attraction_pool_movie(show=True):
@@ -174,7 +173,7 @@ def make_cool_zooming_movie():
 
 
 def make_cool_pools():
-    config = model.AttractionPoolConfiguration(-1.1211, 0.1, (-10, 10), (-10, 10), 800)
+    config = model.AttractionPoolConfiguration(-1.1211, 0.1, (-10, 10), (-10, 10), 200)
     show_attraction_pool(config, filename='big_special.png', show=True)
 
     config.x_min, config.x_max, config.y_min, config.y_max = -1, -0.99, -1, -0.99
