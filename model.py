@@ -3,6 +3,17 @@ from numba import njit
 import numpy as np
 
 
+class AttractionPoolConfiguration:
+    def __init__(self, gamma, sigma, xs=(-1, 1), ys=(-1, 1), density=100, skip=2000, take=16):
+        self.gamma = gamma
+        self.sigma = sigma
+        self.x_min, self.x_max = xs
+        self.y_min, self.y_max = ys
+        self.density = density
+        self.take = take
+        self.skip = skip
+
+
 @njit()
 def f(x, alpha: float = 4.1, gamma: float = -3):
     return alpha / (1 + x ** 2) + gamma
@@ -171,6 +182,29 @@ def get_attraction_pool(gamma: float, sigma: float, x_set: np.ndarray, steps_cou
         for i, x in enumerate(x_set):
             point = np.array([x, y])
             points = get_points(point, gamma, sigma, steps_count, skip_count)
+            last_points[i, j] = points.T
+            xs, ys = points
+            std = np.std(xs - ys)
+            if std < 1e-2:
+                cycles_map[i, j] = -1
+            else:
+                cycles_map[i, j] = 1
+
+    return cycles_map, last_points
+
+
+def get_attraction_pool_from_config(config: AttractionPoolConfiguration):
+    size = config.density
+    take = config.take
+    x_set = np.linspace(config.x_min, config.x_max, config.density)
+    y_set = np.linspace(config.y_min, config.y_max, config.density)
+    cycles_map = np.zeros((size, size))
+    last_points = np.zeros((size, size, take, 2))
+
+    for j, y in enumerate(y_set):
+        for i, x in enumerate(x_set):
+            point = np.array([x, y])
+            points = get_points(point, config.gamma, config.sigma, config.take, config.skip)
             last_points[i, j] = points.T
             xs, ys = points
             std = np.std(xs - ys)

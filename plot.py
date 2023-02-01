@@ -106,7 +106,7 @@ def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, co, ant
                          limits=True):
     plt.figure(figsize=(10, 10))
     fig, ax = plt.subplots()
-    im = ax.imshow(cycles_map[::-1], extent=extent)
+    im = ax.imshow(cycles_map.T[::-1], extent=extent)
     ax.plot(*co, '.', label='co')
     ax.plot(*anti, '.', label='anti')
     plt.title(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f}$", size=20)
@@ -116,7 +116,7 @@ def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, co, ant
 
     if limits:
         plt.xlim(extent[:2])
-        plt.ylim(extent[:2])
+        plt.ylim(extent[2:])
     if filename is not None:
         plt.savefig(filename)
     if show:

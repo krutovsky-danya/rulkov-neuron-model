@@ -117,14 +117,15 @@ def separate_points(last_points, cpi, steps_count):
     return final_points[:, co_mask], final_points[:, ~co_mask]
 
 
-def show_attraction_pool(gamma, sigma, x_min, x_max, cpi, steps_count=16, filename=None, show=True):
-    coords = np.linspace(x_min, x_max, cpi)
+def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=None, show=True):
+    gamma = config.gamma
+    sigma = config.sigma
 
-    heatmap, last_points = model.get_attraction_pool(gamma, sigma, coords, steps_count, 2000)
+    heatmap, last_points = model.get_attraction_pool_from_config(config)
 
-    co, anti = separate_points(last_points, cpi, steps_count)
+    co, anti = separate_points(last_points, config.density, config.take)
 
-    extent = [x_min, x_max, x_min, x_max]
+    extent = [config.x_min, config.x_max, config.y_min, config.y_max]
 
     plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, filename=filename, show=show)
 
@@ -135,8 +136,10 @@ def show_2d_graphics(show_graphics=False):
     sigmas = np.linspace(0.48, 0, 1000)
 
     if show_graphics:
+        config = model.AttractionPoolConfiguration(0.3, 0.1, (-1, 5), (-1, 5), 200, 200, 4)
         show_bifurcation_diagram_2d(gamma, start, sigmas)
-        show_attraction_pool(0.3, 0.1, 0, 4, 100, 4)
+        show_attraction_pool(config)
+        make_cool_pools()
 
 
 def build_attraction_pool_movie(show=True):
@@ -144,8 +147,9 @@ def build_attraction_pool_movie(show=True):
     filenames = []
 
     for i, g in enumerate(np.linspace(-1, -1.2, 201)):
+        config = model.AttractionPoolConfiguration(g, s, (-2, 6), (-2, 6), 300)
         filename = f'images/image_{i}.png'
-        show_attraction_pool(g, s, -2, 6, 300, filename=filename, show=show)
+        show_attraction_pool(config, filename=filename, show=show)
         filenames.append(filename)
 
     animation.build_video("animations/from_gamma.mov", filenames)
@@ -161,28 +165,40 @@ def make_cool_zooming_movie():
     b2s = np.logspace(np.log(1 + 1), np.log(-0.9776 + 1), frames, base=np.e) - 1
 
     for i, (b1, b2) in enumerate(zip(b1s, b2s)):
+        config = model.AttractionPoolConfiguration(g, s, (b1, b2), (b1, b2), 300)
         filename = f'images/image_zoom_{i}.png'
-        show_attraction_pool(g, s, b1, b2, 300, filename=filename, show=True)
+        show_attraction_pool(config, filename=filename, show=True)
         filenames.append(filename)
 
     animation.build_video("animations/zooming.mov", filenames)
 
 
 def make_cool_pools():
-    show_attraction_pool(-1.1211, 0.1, -10, 10, 800, filename='big_special.png', show=True)
-    show_attraction_pool(-1.1211, 0.1, -1, -0.99, 800, filename='super_small_special.png', show=True)
-    show_attraction_pool(-1.1211, 0.1, -100, -1, 800, filename='very_big_special.png', show=True)
-    # x in [1.25, 1.75]; y in [-0.5, 0.5]
+    config = model.AttractionPoolConfiguration(-1.1211, 0.1, (-10, 10), (-10, 10), 800)
+    show_attraction_pool(config, filename='big_special.png', show=True)
+
+    config.x_min, config.x_max, config.y_min, config.y_max = -1, -0.99, -1, -0.99
+    show_attraction_pool(config, filename='super_small_special.png', show=True)
+
+    config.x_min, config.x_max, config.y_min, config.y_max = -100, -1, -100, -1
+    show_attraction_pool(config, filename='very_big_special.png', show=True)
+
+
+def make_circle_pool():
+    # conf = model.AttractionPoolConfiguration(-1.1211, 0.1, (-10, 10), (-10, 10), density=100)
+    # conf = model.AttractionPoolConfiguration(-1.1211, 0.1, (-2.5, 5), (-2.5, 5), density=100)
+    # conf = model.AttractionPoolConfiguration(-1.1211, 0.1, (-1, 4), (-1, 4), density=300)
+    # conf = model.AttractionPoolConfiguration(-1.1211, 0.1, (1, 3.5), (-1, 1), density=300)
+    # conf = model.AttractionPoolConfiguration(-1.1211, 0.1, (1, 2), (-1, 1), density=300)
+    conf = model.AttractionPoolConfiguration(-1.1211, 0.1, (1, 2), (-0.5, 0.5), density=300)
+    # conf = model.AttractionPoolConfiguration(-1.1211, 0.1, (1.6, 2), (-0.2, 0.2), density=500)
+    show_attraction_pool(conf)
 
 
 def main():
-    show_1d_graphics(True)
+    # show_1d_graphics(True)
     show_2d_graphics(True)
 
 
 if __name__ == '__main__':
-    # main()
-    # x in [1.25, 1.75]; y in [-0.5, 0.5]
-
-    show_attraction_pool(-1.1211, 0.1, -1, 1, 400, 30, filename="important/with_attractors.png")
-    show_attraction_pool(-1.1211, 0.1, -2, 6, 400, 30, filename="important/bigger_with_attractors.png")
+    main()
