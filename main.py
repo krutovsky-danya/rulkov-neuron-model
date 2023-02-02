@@ -138,7 +138,7 @@ def show_2d_graphics(show_graphics=False):
     if show_graphics:
         config = model.AttractionPoolConfiguration(0.3, 0.1, (-1, 5), (-1, 5), 200, 200, 4)
         show_bifurcation_diagram_2d(gamma, start, sigmas)
-        show_attraction_pool(config)
+        # show_attraction_pool(config)
 
 
 def build_attraction_pool_movie(show=True):
@@ -201,3 +201,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # make_circle_pool()

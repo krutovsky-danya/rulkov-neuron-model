@@ -1,11 +1,25 @@
 from typing import Generator, Tuple, Any
-from numba import njit
+from numba.experimental import jitclass
+from numba import njit, int32, float32
 import numpy as np
 
+spec = [
+    ('gamma', float32),
+    ('sigma', float32),
+    ('x_min', float32),
+    ('x_max', float32),
+    ('y_min', float32),
+    ('y_max', float32),
+    ('density', int32),
+    ('skip', int32),
+    ('take', int32),
+]
 
+
+# @jitclass(spec)
 class AttractionPoolConfiguration:
-    def __init__(self, gamma, sigma, xs=(-1, 1), ys=(-1, 1), density=100, skip=2000, take=16):
-        self.gamma = gamma
+    def __init__(self, gamma: float, sigma, xs=(-1, 1), ys=(-1, 1), density=100, skip=2000, take=16):
+        self.gamma: float = gamma
         self.sigma = sigma
         self.x_min, self.x_max = xs
         self.y_min, self.y_max = ys
@@ -172,7 +186,7 @@ def get_parametrized_points(sigmas, points: np.ndarray, dim=0):
     return parametrized.T
 
 
-@njit()
+# @njit()
 def get_attraction_pool(config: AttractionPoolConfiguration):
     size = config.density
     take = config.take
