@@ -104,8 +104,8 @@ def show_bifurcation_diagram_2d(gamma: float, restarting, continuing):
 
 def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, co, anti, filename=None, show=True,
                          limits=True):
-    plt.figure(figsize=(10, 10))
     fig, ax = plt.subplots()
+    fig.set_size_inches(14, 7)
     im = ax.imshow(cycles_map.T[::-1], extent=extent)
     ax.plot(*co, '.', label='co')
     ax.plot(*anti, '.', label='anti')
