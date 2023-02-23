@@ -1,9 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from functools import wraps
+import time
 
 import animation
 import model
 import plot
+
+
+def timeit(func):
+    @wraps(func)
+    def timeit_wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        total_time = end_time - start_time
+        print(f'Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
+        return result
+
+    return timeit_wrapper
 
 
 def show_stable_points(show_graphics, xs):
@@ -95,14 +110,18 @@ def show_1d_graphics(show_graphics=False):
     show_several_phase_portraits(show_graphics)
 
 
-def show_bifurcation_diagram_2d(gamma: float, start, sigmas):
-    points_restarting = model.get_points_by_sigmas(start, gamma, sigmas)
-    restarting = model.get_parametrized_points(sigmas, points_restarting)
+def show_bifurcation_diagram_2d(gamma: float, sigmas):
+    num = 7
+    points_sets = []
+    for x in np.linspace(-5, 5, num):
+        for y in np.linspace(-5, 5, num):
+            origin = np.array((x, y))
+            points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, restart=True)
+            points_set = model.get_parametrized_points(sigmas, points_restarting)
 
-    points_continuing = model.get_points_by_sigmas(np.zeros(2), gamma, sigmas)
-    continuing = model.get_parametrized_points(sigmas, points_continuing)
+            points_sets.append(points_set)
 
-    plot.show_bifurcation_diagram_2d(gamma, restarting, continuing)
+    plot.show_bifurcation_diagram_2d(gamma, points_sets)
 
 
 def separate_points(last_points, cpi, steps_count):
@@ -132,13 +151,12 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
 
 def show_2d_graphics(show_graphics=False):
     gamma = -0.7
-    start = np.array([1.2, 1])
     sigmas = np.linspace(0.48, 0, 1000)
 
     if show_graphics:
-        config = model.AttractionPoolConfiguration(0.3, 0.1, (-1, 5), (-1, 5), 200, 200, 4)
-        show_bifurcation_diagram_2d(gamma, start, sigmas)
-        # show_attraction_pool(config)
+        show_bifurcation_diagram_2d(gamma, sigmas)
+        config = model.AttractionPoolConfiguration(gamma, 0.27, (-5, 5), (-5, 5), 200, 2000, 4)
+        show_attraction_pool(config)
 
 
 def build_attraction_pool_movie(show=True):
@@ -194,6 +212,7 @@ def make_circle_pool():
     show_attraction_pool(conf)
 
 
+@timeit
 def main():
     # show_1d_graphics(True)
     show_2d_graphics(True)
