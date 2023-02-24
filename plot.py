@@ -93,7 +93,7 @@ def show_phase_portraits(gamma, graphic, sequences, leaders):
 
 
 def show_bifurcation_diagram_2d(gamma: float, points_sets):
-    plt.figure(figsize=(14, 7))
+    plt.figure(figsize=(18, 9))
     for points_set in points_sets:
         plt.plot(*points_set, '.', markersize=0.1)
     plt.title(f"$\\gamma={gamma:.4f}$", size=20)
@@ -103,10 +103,16 @@ def show_bifurcation_diagram_2d(gamma: float, points_sets):
 
 
 def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, co, anti, filename=None, show=True,
-                         limits=True):
+                         limits=True, traces=None):
     fig, ax = plt.subplots()
     fig.set_size_inches(14, 7)
     im = ax.imshow(cycles_map.T[::-1], extent=extent)
+    if traces is not None:
+        width, height, *_ = traces.shape
+        for x in range(width):
+            for y in range(height):
+                trace = traces[x, y].T
+                ax.plot(*trace)
     ax.plot(*co, '.', label='co')
     ax.plot(*anti, '.', label='anti')
     plt.title(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f}$", size=20)

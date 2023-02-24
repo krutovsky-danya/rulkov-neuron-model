@@ -1,7 +1,7 @@
 from typing import Generator, Tuple, Any
-from numba.experimental import jitclass
-from numba import njit, int32, float32
+
 import numpy as np
+from numba import njit, int32, float32
 
 spec = [
     ('gamma', float32),
@@ -186,7 +186,19 @@ def get_parametrized_points(sigmas, points: np.ndarray, dim=0):
     return parametrized.T
 
 
-# @njit()
+def get_attractor_index(points, attractors: list, max_points):
+    rounded = np.around(points, 5)
+    frozen = frozenset(map(tuple, rounded.tolist()))
+
+    if len(frozen) >= 0.8 * max_points:
+        return 0
+    if frozen in attractors:
+        return attractors.index(frozen) + 1
+
+    attractors.append(frozen)
+    return len(attractors)
+
+
 def get_attraction_pool(config: AttractionPoolConfiguration):
     size = config.density
     take = config.take
@@ -195,16 +207,16 @@ def get_attraction_pool(config: AttractionPoolConfiguration):
     cycles_map = np.zeros((size, size))
     last_points = np.zeros((size, size, take, 2))
 
+    attractors = []
+
     for j, y in enumerate(y_set):
         for i, x in enumerate(x_set):
             point = np.array([x, y])
             points = get_points(point, config.gamma, config.sigma, config.take, config.skip)
-            last_points[i, j] = points.T
-            xs, ys = points
-            std = np.std(xs - ys)
-            if std < 1e-2:
-                cycles_map[i, j] = -1
-            else:
-                cycles_map[i, j] = 1
+            points = points.T
+            attractor_index = get_attractor_index(points, attractors, config.take)
+            last_points[i, j] = points
 
-    return cycles_map, last_points
+            cycles_map[i, j] = attractor_index
+
+    return cycles_map, last_points, attractors

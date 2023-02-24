@@ -115,11 +115,12 @@ def show_bifurcation_diagram_2d(gamma: float, sigmas):
     points_sets = []
     for x in np.linspace(-5, 5, num):
         for y in np.linspace(-5, 5, num):
-            origin = np.array((x, y))
-            points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, restart=True)
-            points_set = model.get_parametrized_points(sigmas, points_restarting)
+            for restarting in [True, False]:
+                origin = np.array((x, y))
+                points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, restart=restarting)
+                points_set = model.get_parametrized_points(sigmas, points_restarting)
 
-            points_sets.append(points_set)
+                points_sets.append(points_set)
 
     plot.show_bifurcation_diagram_2d(gamma, points_sets)
 
@@ -127,7 +128,7 @@ def show_bifurcation_diagram_2d(gamma: float, sigmas):
 def separate_points(last_points, cpi, steps_count):
     lined = np.reshape(last_points, (cpi * cpi * steps_count, 2))
     rounded = np.around(lined, 5)
-    points, counts = np.unique(rounded, return_counts=True, axis=0)
+    points = np.unique(rounded, axis=0)
 
     final_points = points.T
 
@@ -140,22 +141,37 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
     gamma = config.gamma
     sigma = config.sigma
 
-    heatmap, last_points = model.get_attraction_pool(config)
+    heatmap, last_points, attractors = model.get_attraction_pool(config)
 
     co, anti = separate_points(last_points, config.density, config.take)
 
     extent = [config.x_min, config.x_max, config.y_min, config.y_max]
 
     plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, filename=filename, show=show)
+    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, filename=filename, show=show, traces=last_points)
 
 
-def show_2d_graphics(show_graphics=False):
+def show_2d_graphics():
+    sigmas = np.linspace(0.48, 0, 2001)
+
     gamma = -0.7
-    sigmas = np.linspace(0.48, 0, 1000)
 
-    if show_graphics:
-        show_bifurcation_diagram_2d(gamma, sigmas)
-        config = model.AttractionPoolConfiguration(gamma, 0.27, (-5, 5), (-5, 5), 200, 2000, 4)
+    show_bifurcation_diagram_2d(gamma, sigmas)
+
+    config = model.AttractionPoolConfiguration(gamma, 0, (-5, 5), (-5, 5), 20, 200, 20)
+
+    for sigma in [0.05, 0.1, 0.3, 0.45]:
+        config.sigma = sigma
+        show_attraction_pool(config)
+
+    gamma = 0.7
+
+    show_bifurcation_diagram_2d(gamma, sigmas)
+
+    config = model.AttractionPoolConfiguration(gamma, 0, (-2, 8), (-2, 8), 20, 200, 20)
+
+    for sigma in [0.04, 0.2]:
+        config.sigma = sigma
         show_attraction_pool(config)
 
 
@@ -215,7 +231,7 @@ def make_circle_pool():
 @timeit
 def main():
     # show_1d_graphics(True)
-    show_2d_graphics(True)
+    show_2d_graphics()
 
 
 if __name__ == '__main__':
