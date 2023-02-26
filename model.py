@@ -190,8 +190,8 @@ def get_attractor_index(points, attractors: list, max_points):
     rounded = np.around(points, 5)
     frozen = frozenset(map(tuple, rounded.tolist()))
 
-    if len(frozen) >= 0.8 * max_points:
-        return 0
+    # if len(frozen) >= 0.8 * max_points:
+    #     return 0
     if frozen in attractors:
         return attractors.index(frozen) + 1
 
@@ -220,3 +220,18 @@ def get_attraction_pool(config: AttractionPoolConfiguration):
             cycles_map[i, j] = attractor_index
 
     return cycles_map, last_points, attractors
+
+
+def stochastic_coupling_f(x, y, gamma_x, gamma_y, sigma):
+    x_ = f(x, gamma=gamma_x) + sigma * (y - x)
+    y_ = f(y, gamma=gamma_y) + sigma * (x - y)
+    return x_, y_
+
+
+def get_stochastic_coupling_trace(start, gammas, sigma):
+    trace = np.zeros(gammas.shape)
+    state = start
+    for i, gamma in enumerate(gammas):
+        state = stochastic_coupling_f(*state, *gamma, sigma)
+        trace[i] = np.array(state)
+    return trace.T

@@ -107,14 +107,14 @@ def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, co, ant
     fig, ax = plt.subplots()
     fig.set_size_inches(14, 7)
     im = ax.imshow(cycles_map.T[::-1], extent=extent)
-    if traces is not None:
-        width, height, *_ = traces.shape
-        for x in range(width):
-            for y in range(height):
-                trace = traces[x, y].T
-                ax.plot(*trace)
+
     ax.plot(*co, '.', label='co')
     ax.plot(*anti, '.', label='anti')
+
+    if traces is not None:
+        for trace in traces:
+            ax.plot(*trace)
+
     plt.title(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f}$", size=20)
     plt.xlabel('$x$', size=20)
     plt.ylabel('$y$', size=20, rotation=0)

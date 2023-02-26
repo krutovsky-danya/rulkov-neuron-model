@@ -147,32 +147,54 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
 
     extent = [config.x_min, config.x_max, config.y_min, config.y_max]
 
+    traces = []
+    for attractor in attractors:
+        f = list(attractor)
+        origin = np.array(f[0])
+        trace = model.get_points(origin, gamma, sigma, 200)
+        traces.append(trace)
+
     plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, filename=filename, show=show)
-    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, filename=filename, show=show, traces=last_points)
+    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, filename=filename, show=show, traces=traces)
+
+
+def show_deterministic_2d_graphics(gamma, special_sigmas, edges):
+    sigmas = np.linspace(0.48, 0, 201)
+    show_bifurcation_diagram_2d(gamma, sigmas)
+
+    config = model.AttractionPoolConfiguration(gamma, 0, edges, edges, 20, 500, 100)
+
+    for sigma in special_sigmas:
+        config.sigma = sigma
+        show_attraction_pool(config)
 
 
 def show_2d_graphics():
-    sigmas = np.linspace(0.48, 0, 2001)
+    show_deterministic_2d_graphics(-0.7, [0.05, 0.1, 0.3, 0.45], (-5, 5))
 
-    gamma = -0.7
+    show_deterministic_2d_graphics(0.7, [0.04, 0.2], (-3, 8))
 
-    show_bifurcation_diagram_2d(gamma, sigmas)
 
-    config = model.AttractionPoolConfiguration(gamma, 0, (-5, 5), (-5, 5), 20, 200, 20)
+def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5)):
+    config = model.AttractionPoolConfiguration(gamma, sigma, border, border, 20, 500, 20)
 
-    for sigma in [0.05, 0.1, 0.3, 0.45]:
-        config.sigma = sigma
-        show_attraction_pool(config)
+    extent = [config.x_min, config.x_max, config.y_min, config.y_max]
+    heatmap, last_points, attractors = model.get_attraction_pool(config)
 
-    gamma = 0.7
+    s = np.random.normal(0, 1, (300, 2))
 
-    show_bifurcation_diagram_2d(gamma, sigmas)
+    stochastic_gammas = gamma + epsilon * s
+    stochastic_traces = []
+    for attractor in attractors:
+        f = list(attractor)
+        trace = model.get_stochastic_coupling_trace(f[0], stochastic_gammas, sigma)
+        stochastic_traces.append(trace)
 
-    config = model.AttractionPoolConfiguration(gamma, 0, (-2, 8), (-2, 8), 20, 200, 20)
-
-    for sigma in [0.04, 0.2]:
-        config.sigma = sigma
-        show_attraction_pool(config)
+    if len(stochastic_traces) == 1:
+        co, anti = stochastic_traces[0], []
+    else:
+        co, anti, *_ = stochastic_traces
+    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti)
 
 
 def build_attraction_pool_movie(show=True):
@@ -232,6 +254,8 @@ def make_circle_pool():
 def main():
     # show_1d_graphics(True)
     show_2d_graphics()
+    show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
+    show_stochastic_2d_graphics(gamma=0.7, sigma=0.04, epsilon=0.1, border=(-3, 8))
 
 
 if __name__ == '__main__':
