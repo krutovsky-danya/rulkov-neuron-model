@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import matplotlib.pyplot as plt
 from functools import wraps
@@ -250,12 +252,64 @@ def make_circle_pool():
     show_attraction_pool(conf)
 
 
+def show_confidence_ellipse_for_equilibrium(gamma, sigma, epsilon, border, p=0.999):
+    origin = np.zeros(2)
+    equilibrium = model.get_points(origin, gamma, sigma, 1, 500)[:, 0]
+    stochastic_gammas = gamma + np.random.normal(0, epsilon, (1000, 2))
+    stochastic_trace = model.get_stochastic_coupling_trace(equilibrium, stochastic_gammas, sigma)
+
+    g_1 = g_2 = model.f_(equilibrium[0]) - sigma
+
+    a = np.array([
+        [g_1 * g_2, sigma * g_1, sigma * g_2, sigma ** 2],
+        [sigma * g_1, g_1 ** 2, sigma ** 2, sigma * g_1],
+        [sigma * g_2, sigma ** 2, g_2 ** 2, sigma * g_2],
+        [sigma ** 2, sigma * g_1, sigma * g_2, g_1 * g_2],
+    ])
+
+    b = np.eye(4) - a
+
+    b_inv = np.linalg.inv(b)
+
+    q = np.array([1, 0, 0, 1])
+
+    m = q @ b_inv
+
+    m = m.reshape((2, 2))
+
+    w, v = np.linalg.eig(m)
+
+    k = (-np.log(1 - p)) ** 0.5
+
+    # det = np.linalg.det(v)
+
+    z = (2 * w) ** 0.5 * epsilon * k
+
+    t = np.linspace(0, 2 * math.pi, 100)
+    circle = np.array([np.cos(t), np.sin(t)])
+    (v11, v12), (v21, v22) = v
+    z1, z2 = (z * circle.T).T
+    ell = equilibrium + np.array([z1 * v22 - z2 * v12, z2 * v11 - z1 * v21]).T
+
+    plt.title(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f};$\n$\\epsilon={epsilon:.3f}; p={p:.3f}$", size=15)
+    plt.xlabel('$x$', size=20)
+    plt.ylabel('$y$', size=20, rotation=0)
+    plt.plot(*stochastic_trace, '.', markersize=1, label="Stochastic points")
+    plt.plot(*ell.T, label='Confidence ellipsis')
+    plt.xlim(*border)
+    plt.ylim(*border)
+    plt.legend()
+    plt.show()
+
+
 @timeit
 def main():
     # show_1d_graphics(True)
-    show_2d_graphics()
-    show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
-    show_stochastic_2d_graphics(gamma=0.7, sigma=0.04, epsilon=0.1, border=(-3, 8))
+    # show_2d_graphics()
+    # show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
+
+    # show_stochastic_2d_graphics(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2))
+    show_confidence_ellipse_for_equilibrium(0.7, 0.04, 0.01, (1.5, 2))
 
 
 if __name__ == '__main__':
