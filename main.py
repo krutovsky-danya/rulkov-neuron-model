@@ -114,15 +114,17 @@ def show_1d_graphics(show_graphics=False):
 
 def show_bifurcation_diagram_2d(gamma: float, sigmas):
     num = 7
+    edges = (-5, 5)
+    config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num, 500, 100)
+    _, _, attractors = model.get_attraction_pool(config)
     points_sets = []
-    for x in np.linspace(-5, 5, num):
-        for y in np.linspace(-5, 5, num):
-            for restarting in [True, False]:
-                origin = np.array((x, y))
-                points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, restart=restarting)
-                points_set = model.get_parametrized_points(sigmas, points_restarting)
+    for attractor in attractors:
+        origin = np.array(list(attractor)[0])
+        for restarting in [True, False]:
+            points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, restart=restarting)
+            points_set = model.get_parametrized_points(sigmas, points_restarting)
 
-                points_sets.append(points_set)
+            points_sets.append(points_set)
 
     plot.show_bifurcation_diagram_2d(gamma, points_sets)
 
@@ -161,10 +163,10 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
 
 
 def show_deterministic_2d_graphics(gamma, special_sigmas, edges):
-    sigmas = np.linspace(0.48, 0, 201)
+    sigmas = np.linspace(0.48, 0, 2001)
     show_bifurcation_diagram_2d(gamma, sigmas)
 
-    config = model.AttractionPoolConfiguration(gamma, 0, edges, edges, 20, 500, 100)
+    config = model.AttractionPoolConfiguration(gamma, 0, edges, edges, 50, 500, 100)
 
     for sigma in special_sigmas:
         config.sigma = sigma
@@ -252,10 +254,10 @@ def make_circle_pool():
     show_attraction_pool(conf)
 
 
-def show_confidence_ellipse_for_equilibrium(gamma, sigma, epsilon, border, p=0.999):
+def show_confidence_ellipse_for_equilibrium(gamma, sigma, epsilon, border, p=0.99):
     origin = np.zeros(2)
-    equilibrium = model.get_points(origin, gamma, sigma, 1, 500)[:, 0]
-    stochastic_gammas = gamma + np.random.normal(0, epsilon, (1000, 2))
+    equilibrium = model.get_points(origin, gamma, sigma, 1, 1000)[:, 0]
+    stochastic_gammas = gamma + epsilon * np.random.normal(0, 1, (1000, 2))
     stochastic_trace = model.get_stochastic_coupling_trace(equilibrium, stochastic_gammas, sigma)
 
     g_1 = g_2 = model.f_(equilibrium[0]) - sigma
@@ -305,10 +307,10 @@ def show_confidence_ellipse_for_equilibrium(gamma, sigma, epsilon, border, p=0.9
 @timeit
 def main():
     # show_1d_graphics(True)
-    # show_2d_graphics()
-    # show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
+    show_2d_graphics()
+    show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
 
-    # show_stochastic_2d_graphics(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2))
+    show_stochastic_2d_graphics(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2))
     show_confidence_ellipse_for_equilibrium(0.7, 0.04, 0.01, (1.5, 2))
 
 
