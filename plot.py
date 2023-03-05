@@ -103,7 +103,7 @@ def show_bifurcation_diagram_2d(gamma: float, points_sets):
 
 
 def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, co, anti, filename=None, show=True,
-                         limits=True, traces=None):
+                         limits=True, traces=None, trace_mode='-'):
     fig, ax = plt.subplots()
     fig.set_size_inches(14, 7)
     im = ax.imshow(cycles_map.T[::-1], extent=extent)
@@ -113,7 +113,7 @@ def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, co, ant
 
     if traces is not None:
         for trace in traces:
-            ax.plot(*trace)
+            ax.plot(*trace, trace_mode)
 
     plt.title(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f}$", size=20)
     plt.xlabel('$x$', size=20)

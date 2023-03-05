@@ -198,7 +198,7 @@ def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5,
         co, anti = stochastic_traces[0], []
     else:
         co, anti, *_ = stochastic_traces
-    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti)
+    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, traces=stochastic_traces, trace_mode='.')
 
 
 def build_attraction_pool_movie(show=True):
@@ -280,6 +280,20 @@ def solve_stochastic_sensitivity_matrix(f, q):
     return m
 
 
+def get_confidence_ellipse_for_point(point, m, epsilon, p):
+    w, v = np.linalg.eig(m)
+    k = (-np.log(1 - p)) ** 0.5
+    z = (2 * w) ** 0.5 * epsilon * k
+
+    t = np.linspace(0, 2 * math.pi, 100)
+
+    circle = np.array([np.cos(t), np.sin(t)])
+    (v11, v12), (v21, v22) = v
+    z1, z2 = (z * circle.T).T
+    ellipse = point + np.array([z1 * v22 - z2 * v12, z2 * v11 - z1 * v21]).T
+    return ellipse
+
+
 def show_confidence_ellipse_for_equilibrium(gamma, sigma, epsilon, border, p=0.99):
     origin = np.zeros(2)
     equilibrium = model.get_points(origin, gamma, sigma, 1, 1000)[:, 0]
@@ -294,17 +308,7 @@ def show_confidence_ellipse_for_equilibrium(gamma, sigma, epsilon, border, p=0.9
 
     m = solve_stochastic_sensitivity_matrix(f, np.eye(2))
 
-    w, v = np.linalg.eig(m)
-
-    k = (-np.log(1 - p)) ** 0.5
-
-    z = (2 * w) ** 0.5 * epsilon * k
-
-    t = np.linspace(0, 2 * math.pi, 100)
-    circle = np.array([np.cos(t), np.sin(t)])
-    (v11, v12), (v21, v22) = v
-    z1, z2 = (z * circle.T).T
-    ell = equilibrium + np.array([z1 * v22 - z2 * v12, z2 * v11 - z1 * v21]).T
+    ell = get_confidence_ellipse_for_point(equilibrium, m, epsilon, p)
 
     plt.title(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f};$\n$\\epsilon={epsilon:.3f}; p={p:.3f}$", size=15)
     plt.xlabel('$x$', size=20)
@@ -317,18 +321,8 @@ def show_confidence_ellipse_for_equilibrium(gamma, sigma, epsilon, border, p=0.9
     plt.show()
 
 
-def show_confidence_ellipses_for_k_cycle(gamma, sigma, epsilon, border, p):
-    conf = model.AttractionPoolConfiguration(gamma, sigma, border, border, density=3)
-    _, _, attractors = model.get_attraction_pool(conf)
-    k_cycles = []
-    for attractor in attractors:
-        if len(attractor) != 1 and len(attractor) < 10:
-            k_cycles.append(attractor)
-
-    k_cycle = list(k_cycles[0])
+def get_confidence_ellipses_for_k_cycle(gamma, sigma, epsilon, p, k_cycle):
     k = len(k_cycle)
-    k_cycle = model.get_points(np.array(list(k_cycle[0])), gamma, sigma, k, 200).T
-
     fs = []
     for x in k_cycle:
         x1, x2 = x
@@ -345,25 +339,66 @@ def show_confidence_ellipses_for_k_cycle(gamma, sigma, epsilon, border, p):
         f = f @ f_i
 
     q = np.zeros((2, 2))
-    for i, q_i in enumerate([np.eye(2)] * k):
+    qs = [np.eye(2)] * k
+    for i, q_t in enumerate(qs):
         f_prefix = f_prefixes[i]
-        q = q + f_prefix @ q_i @ f_prefix.T
+        q = q + f_prefix @ q_t @ f_prefix.T
 
     m = solve_stochastic_sensitivity_matrix(f, q)
 
-    print(f)
-    print(q)
-    print(m)
-
     ms = [m]
+    for i in range(k):
+        f_t = fs[i]
+        q_t = qs[i]
+        m_t = ms[i]
+        m_t_1 = f_t @ m_t @ f_t.T + q_t
+        ms.append(m_t_1)
 
-    for f_t in fs:
-        m_t = f_t @ ms[-1] @ f_t.T + q_i
-        ms.append(m_t)
+    ellipses = []
+    for i in range(k):
+        point = k_cycle[i]
+        m_t = ms[i]
+        ellipse_t = get_confidence_ellipse_for_point(point, m_t, epsilon, p)
+        ellipses.append(ellipse_t)
 
-    print(*ms)
+    return ellipses
 
-    print(q.reshape(4))
+
+def show_confidence_ellipses_for_k_cycle(gamma, sigma, epsilon, border, p):
+    conf = model.AttractionPoolConfiguration(gamma, sigma, border, border, density=3)
+    _, _, attractors = model.get_attraction_pool(conf)
+    k_cycles = []
+    for attractor in attractors:
+        if len(attractor) != 1:
+            k_cycles.append(attractor)
+
+    groups_of_ellipses = []
+    stochastic_traces = []
+    for k_cycle in k_cycles:
+        k_cycle = list(k_cycle)
+        k = len(k_cycle)
+        k_cycle = model.get_points(np.array(list(k_cycle[0])), gamma, sigma, k, 200).T
+        ellipses = get_confidence_ellipses_for_k_cycle(gamma, sigma, epsilon, p, k_cycle)
+        groups_of_ellipses.append(ellipses)
+
+        stochastic_gammas = gamma + epsilon * np.random.normal(0, 1, (1000, 2))
+        stochastic_trace = model.get_stochastic_coupling_trace(k_cycle[0], stochastic_gammas, sigma)
+
+        stochastic_traces.append(stochastic_trace)
+
+    for t in range(len(k_cycles)):
+        ellipses = groups_of_ellipses[t]
+        stochastic_trace = stochastic_traces[t]
+        for i, ellipse_t in enumerate(ellipses):
+            plt.plot(*ellipse_t.T, label=f'Confidence ellipse {t, i}')
+        plt.plot(*stochastic_trace, '.', markersize=1, label="Stochastic points {t}")
+
+    plt.title(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f};$\n$\\epsilon={epsilon:.3f}; p={p:.3f}$", size=15)
+    plt.xlabel('$x$', size=20)
+    plt.ylabel('$y$', size=20, rotation=0)
+    # plt.legend()
+
+    plt.show()
 
 
 @timeit
@@ -371,12 +406,16 @@ def main():
     # show_1d_graphics(True)
     # show_2d_graphics()
     # show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
-
+    #
     # show_stochastic_2d_graphics(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2))
     # show_confidence_ellipse_for_equilibrium(0.7, 0.04, 0.01, (1.5, 2))
-
+    #
     # show_stochastic_2d_graphics(0.7, 0.2, 0.01, (-3, 8))
-    show_confidence_ellipses_for_k_cycle(0.7, 0.2, 0.01, (-3, 8), 0.95)
+    # show_confidence_ellipses_for_k_cycle(0.7, 0.2, 0.1, (-3, 8), 0.995)
+
+    show_deterministic_2d_graphics(-0.7, [0.3], (-5, 5))
+    show_stochastic_2d_graphics(-0.7, 0.3, 0.1, (-5, 5))
+    show_confidence_ellipses_for_k_cycle(-0.7, 0.3, 0.1, (-5, 5), 0.995)
 
 
 if __name__ == '__main__':
