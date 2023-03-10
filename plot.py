@@ -102,6 +102,25 @@ def show_bifurcation_diagram_2d(gamma: float, points_sets):
     plt.show()
 
 
+def plot_attraction_pool(figure: plt.Figure, axis: plt.Axes, pools, extent):
+    axis.set_xlabel('$x$', size=20)
+    axis.set_ylabel('$y$', size=20, rotation=0)
+
+    axis.imshow(pools.T[::-1], extent=extent)
+
+    axis.set_xlim(extent[:2])
+    axis.set_ylim(extent[2:])
+
+    return figure, axis
+
+
+def plot_attractors(figure: plt.Figure, axis: plt.Axes, attractors):
+    for attractor in attractors:
+        axis.plot(*attractor, '.')
+
+    return figure, axis
+
+
 def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, co, anti, filename=None, show=True,
                          limits=True, traces=None, trace_mode='-'):
     fig, ax = plt.subplots()
