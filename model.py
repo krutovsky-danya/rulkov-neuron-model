@@ -190,8 +190,10 @@ def get_attractor_index(points, attractors: list, max_points):
     rounded = np.around(points, 5)
     frozen = frozenset(map(tuple, rounded.tolist()))
 
-    # if len(frozen) >= 0.8 * max_points:
-    #     return 0
+    if len(frozen) >= 0.8 * max_points:
+        if len(attractors[0]) == 0:
+            attractors[0] = frozen
+        return 0
     if frozen in attractors:
         return attractors.index(frozen) + 1
 
@@ -207,7 +209,7 @@ def get_attraction_pool(config: AttractionPoolConfiguration):
     cycles_map = np.zeros((size, size))
     last_points = np.zeros((size, size, take, 2))
 
-    attractors = []
+    attractors = [[]]
 
     for j, y in enumerate(y_set):
         for i, x in enumerate(x_set):
@@ -218,6 +220,9 @@ def get_attraction_pool(config: AttractionPoolConfiguration):
             last_points[i, j] = points
 
             cycles_map[i, j] = attractor_index
+
+    if len(attractors[0]) == 0:
+        attractors.remove([])
 
     return cycles_map, last_points, attractors
 
