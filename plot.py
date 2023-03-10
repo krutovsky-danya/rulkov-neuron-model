@@ -119,32 +119,3 @@ def plot_attractors(figure: plt.Figure, axis: plt.Axes, attractors):
         axis.plot(*attractor, '.')
 
     return figure, axis
-
-
-def show_attraction_pool(gamma: float, sigma: float, cycles_map, extent, co, anti, filename=None, show=True,
-                         limits=True, traces=None, trace_mode='-'):
-    fig, ax = plt.subplots()
-    fig.set_size_inches(14, 7)
-    im = ax.imshow(cycles_map.T[::-1], extent=extent)
-
-    ax.plot(*co, '.', label='co')
-    ax.plot(*anti, '.', label='anti')
-
-    if traces is not None:
-        for trace in traces:
-            ax.plot(*trace, trace_mode)
-
-    plt.title(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f}$", size=20)
-    plt.xlabel('$x$', size=20)
-    plt.ylabel('$y$', size=20, rotation=0)
-    plt.legend()
-
-    if limits:
-        plt.xlim(extent[:2])
-        plt.ylim(extent[2:])
-    if filename is not None:
-        plt.savefig(filename)
-    if show:
-        plt.show()
-    else:
-        plt.close()

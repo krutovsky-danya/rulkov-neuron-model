@@ -210,11 +210,17 @@ def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5,
         trace = model.get_stochastic_coupling_trace(f[0], stochastic_gammas, sigma)
         stochastic_traces.append(trace)
 
-    if len(stochastic_traces) == 1:
-        co, anti = stochastic_traces[0], []
-    else:
-        co, anti, *_ = stochastic_traces
-    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, traces=stochastic_traces, trace_mode='.')
+    fig, ax = plt.subplots(1, 1)
+
+    fig.set_size_inches(14, 7)
+    fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f};$\n$\\epsilon={epsilon:.3f}$", size=15)
+
+    plot.plot_attraction_pool(fig, ax, heatmap, extent)
+
+    for stochastic_trace in stochastic_traces:
+        ax.plot(*stochastic_trace, '.')
+
+    plt.show()
 
 
 def build_attraction_pool_movie(show=True):
@@ -420,21 +426,21 @@ def show_confidence_ellipses_for_k_cycle(gamma, sigma, epsilon, border, p):
 @timeit
 def main():
     # show_1d_graphics(True)
-    show_2d_graphics()
-    # show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
-    #
-    # show_stochastic_2d_graphics(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2))
-    # show_confidence_ellipse_for_equilibrium(0.7, 0.04, 0.01, (1.5, 2))
-    #
-    # show_stochastic_2d_graphics(0.7, 0.2, 0.01, (-3, 8))
-    # show_confidence_ellipses_for_k_cycle(0.7, 0.2, 0.1, (-3, 8), 0.995)
+    # show_2d_graphics()
+    show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
 
-    # show_deterministic_2d_graphics(-0.7, [0.3], (-5, 5))
-    # show_stochastic_2d_graphics(-0.7, 0.3, 0.1, (-5, 5))
-    # show_confidence_ellipses_for_k_cycle(-0.7, 0.3, 0.1, (-5, 5), 0.995)
+    show_stochastic_2d_graphics(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2))
+    show_confidence_ellipse_for_equilibrium(0.7, 0.04, 0.01, (1.5, 2))
 
-    # show_stochastic_2d_graphics(gamma=0.7, sigma=0.000, epsilon=0.01, border=(1.5, 2))
-    # show_confidence_ellipse_for_equilibrium(0.7, 0.00, 0.01, (1.5, 2))
+    show_stochastic_2d_graphics(0.7, 0.2, 0.01, (-3, 8))
+    show_confidence_ellipses_for_k_cycle(0.7, 0.2, 0.1, (-3, 8), 0.995)
+
+    show_deterministic_2d_graphics(-0.7, [0.3], (-5, 5))
+    show_stochastic_2d_graphics(-0.7, 0.3, 0.1, (-5, 5))
+    show_confidence_ellipses_for_k_cycle(-0.7, 0.3, 0.1, (-5, 5), 0.995)
+
+    show_stochastic_2d_graphics(gamma=0.7, sigma=0.000, epsilon=0.01, border=(1.5, 2))
+    show_confidence_ellipse_for_equilibrium(0.7, 0.00, 0.01, (1.5, 2))
 
 
 if __name__ == '__main__':
