@@ -118,9 +118,10 @@ def show_bifurcation_diagram_2d(gamma: float, sigmas):
     config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num, 500, 100)
     _, _, attractors = model.get_attraction_pool(config)
     points_sets = []
-    for attractor in attractors:
-        origin = np.array(list(attractor)[0])
-        for restarting in [True, False]:
+
+    for restarting in [True, False]:
+        for attractor in attractors:
+            origin = np.array(list(attractor)[0])
             points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, restart=restarting)
             points_set = model.get_parametrized_points(sigmas, points_restarting)
 
@@ -145,25 +146,40 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
     gamma = config.gamma
     sigma = config.sigma
 
-    heatmap, last_points, attractors = model.get_attraction_pool(config)
-
-    co, anti = separate_points(last_points, config.density, config.take)
+    heatmap, _, attractors = model.get_attraction_pool(config)
 
     extent = [config.x_min, config.x_max, config.y_min, config.y_max]
 
+    for i in range(len(attractors)):
+        listed = list(attractors[i])
+        attractors[i] = np.array(listed).T
+
     traces = []
     for attractor in attractors:
-        f = list(attractor)
-        origin = np.array(f[0])
+        origin = np.array(attractor[:, 0])
         trace = model.get_points(origin, gamma, sigma, 200)
         traces.append(trace)
 
-    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, filename=filename, show=show)
-    plot.show_attraction_pool(gamma, sigma, heatmap, extent, co, anti, filename=filename, show=show, traces=traces)
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+
+    fig: plt.Figure = fig
+
+    fig.set_size_inches(14, 7)
+    fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f}$", size=20)
+
+    plot.plot_attraction_pool(fig, ax1, heatmap, extent)
+    plot.plot_attractors(fig, ax1, attractors)
+
+    plot.plot_attraction_pool(fig, ax2, heatmap, extent)
+    plot.plot_attractors(fig, ax2, attractors)
+    for trace in traces:
+        ax2.plot(*trace, '-')
+
+    plt.show()
 
 
 def show_deterministic_2d_graphics(gamma, special_sigmas, edges):
-    sigmas = np.linspace(0.48, 0, 2001)
+    sigmas = np.linspace(0.48, 0, 201)
     show_bifurcation_diagram_2d(gamma, sigmas)
 
     config = model.AttractionPoolConfiguration(gamma, 0, edges, edges, 50, 500, 100)
@@ -183,7 +199,7 @@ def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5,
     config = model.AttractionPoolConfiguration(gamma, sigma, border, border, 20, 500, 20)
 
     extent = [config.x_min, config.x_max, config.y_min, config.y_max]
-    heatmap, last_points, attractors = model.get_attraction_pool(config)
+    heatmap, _, attractors = model.get_attraction_pool(config)
 
     s = np.random.normal(0, 1, (300, 2))
 
@@ -365,7 +381,7 @@ def get_confidence_ellipses_for_k_cycle(gamma, sigma, epsilon, p, k_cycle):
 
 
 def show_confidence_ellipses_for_k_cycle(gamma, sigma, epsilon, border, p):
-    conf = model.AttractionPoolConfiguration(gamma, sigma, border, border, density=3)
+    conf = model.AttractionPoolConfiguration(gamma, sigma, border, border, density=5)
     _, _, attractors = model.get_attraction_pool(conf)
     k_cycles = []
     for attractor in attractors:
@@ -404,7 +420,7 @@ def show_confidence_ellipses_for_k_cycle(gamma, sigma, epsilon, border, p):
 @timeit
 def main():
     # show_1d_graphics(True)
-    # show_2d_graphics()
+    show_2d_graphics()
     # show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
     #
     # show_stochastic_2d_graphics(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2))
@@ -413,9 +429,12 @@ def main():
     # show_stochastic_2d_graphics(0.7, 0.2, 0.01, (-3, 8))
     # show_confidence_ellipses_for_k_cycle(0.7, 0.2, 0.1, (-3, 8), 0.995)
 
-    show_deterministic_2d_graphics(-0.7, [0.3], (-5, 5))
-    show_stochastic_2d_graphics(-0.7, 0.3, 0.1, (-5, 5))
-    show_confidence_ellipses_for_k_cycle(-0.7, 0.3, 0.1, (-5, 5), 0.995)
+    # show_deterministic_2d_graphics(-0.7, [0.3], (-5, 5))
+    # show_stochastic_2d_graphics(-0.7, 0.3, 0.1, (-5, 5))
+    # show_confidence_ellipses_for_k_cycle(-0.7, 0.3, 0.1, (-5, 5), 0.995)
+
+    # show_stochastic_2d_graphics(gamma=0.7, sigma=0.000, epsilon=0.01, border=(1.5, 2))
+    # show_confidence_ellipse_for_equilibrium(0.7, 0.00, 0.01, (1.5, 2))
 
 
 if __name__ == '__main__':
