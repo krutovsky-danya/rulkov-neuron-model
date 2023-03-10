@@ -203,11 +203,9 @@ def get_attractor_index(points, attractors: list, max_points):
 
 def get_attraction_pool(config: AttractionPoolConfiguration):
     size = config.density
-    take = config.take
     x_set = np.linspace(config.x_min, config.x_max, config.density)
     y_set = np.linspace(config.y_min, config.y_max, config.density)
     cycles_map = np.zeros((size, size))
-    last_points = np.zeros((size, size, take, 2))
 
     attractors = [[]]
 
@@ -217,14 +215,13 @@ def get_attraction_pool(config: AttractionPoolConfiguration):
             points = get_points(point, config.gamma, config.sigma, config.take, config.skip)
             points = points.T
             attractor_index = get_attractor_index(points, attractors, config.take)
-            last_points[i, j] = points
 
             cycles_map[i, j] = attractor_index
 
     if len(attractors[0]) == 0:
         attractors.remove([])
 
-    return cycles_map, last_points, attractors
+    return cycles_map, None, attractors
 
 
 def stochastic_coupling_f(x, y, gamma_x, gamma_y, sigma):
