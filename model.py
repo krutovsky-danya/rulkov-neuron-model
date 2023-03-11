@@ -1,3 +1,4 @@
+import math
 from typing import Generator, Tuple, Any
 
 import numpy as np
@@ -237,3 +238,114 @@ def get_stochastic_coupling_trace(start, gammas, sigma):
         state = stochastic_coupling_f(*state, *gamma, sigma)
         trace[i] = np.array(state)
     return trace.T
+
+
+def solve_stochastic_sensitivity_matrix(function_derivative_by_point, q):
+    (f11, f12), (f21, f22) = function_derivative_by_point
+    a = np.array([
+        [f11, f21, f11, f21],
+        [f12, f22, f12, f22],
+        [f11, f21, f11, f21],
+        [f12, f22, f12, f22],
+    ]) * np.array([
+        [f11, f11, f21, f21],
+        [f11, f11, f21, f21],
+        [f12, f12, f22, f22],
+        [f12, f12, f22, f22],
+    ])
+    q = q.reshape(4)
+
+    b = np.eye(4) - a
+    # det_b = np.linalg.det(b)
+    b_inv = np.linalg.inv(b)
+
+    m = q @ b_inv
+
+    m = m.reshape((2, 2))
+
+    return m
+
+
+def get_confidence_ellipse_for_point(point, m, epsilon, p):
+    w, v = np.linalg.eig(m)
+    k = (-np.log(1 - p)) ** 0.5
+    z = (2 * w) ** 0.5 * epsilon * k
+
+    t = np.linspace(0, 2 * math.pi, 100)
+
+    circle = np.array([np.cos(t), np.sin(t)])
+    (v11, v12), (v21, v22) = v
+    z1, z2 = (z * circle.T).T
+    ellipse = point + np.array([z1 * v22 - z2 * v12, z2 * v11 - z1 * v21]).T
+    return ellipse
+
+
+def get_confidence_ellipse_for_equilibrium(equilibrium, sigma, epsilon, p):
+    x1, x2 = equilibrium
+    function_derivative_by_point = np.array([
+        [f_(x1) - sigma, sigma],
+        [sigma, f_(x2) - sigma]
+    ])
+    m = solve_stochastic_sensitivity_matrix(function_derivative_by_point, np.eye(2))
+
+    ell = get_confidence_ellipse_for_point(equilibrium, m, epsilon, p)
+
+    return ell
+
+
+def get_confidence_ellipses_for_k_cycle(sigma, epsilon, p, k_cycle):
+    k = len(k_cycle)
+    fs = []
+    for x in k_cycle:
+        x1, x2 = x
+        function_derivative_by_point = np.array([
+            [f_(x1), sigma],
+            [sigma, f_(x2)]
+        ])
+        fs.append(function_derivative_by_point)
+
+    function_derivative_by_point = np.eye(2)
+    f_prefixes = []
+    for f_i in reversed(fs):
+        f_prefixes.append(function_derivative_by_point)
+        function_derivative_by_point = function_derivative_by_point @ f_i
+
+    q = np.zeros((2, 2))
+    qs = [np.eye(2)] * k
+    for i, q_t in enumerate(qs):
+        f_prefix = f_prefixes[i]
+        q = q + f_prefix @ q_t @ f_prefix.T
+
+    m = solve_stochastic_sensitivity_matrix(function_derivative_by_point, q)
+
+    ms = [m]
+    for i in range(k):
+        f_t = fs[i]
+        q_t = qs[i]
+        m_t = ms[i]
+        m_t_1 = f_t @ m_t @ f_t.T + q_t
+        ms.append(m_t_1)
+
+    ellipses = []
+    for i in range(k):
+        point = k_cycle[i]
+        m_t = ms[i]
+        ellipse_t = get_confidence_ellipse_for_point(point, m_t, epsilon, p)
+        ellipses.append(ellipse_t)
+
+    return ellipses
+
+
+def get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p):
+    for attractor in attractors:
+        attractor = list(attractor)
+        if len(attractor) == 1:
+            equilibrium = attractor[0]
+            ellipse = get_confidence_ellipse_for_equilibrium(equilibrium, sigma, epsilon, p)
+            yield [ellipse]
+        else:
+            k_cycle = list(attractor)
+            k = len(k_cycle)
+            k_cycle = get_points(np.array(k_cycle[0]), gamma, sigma, k, 200).T
+            ellipses = get_confidence_ellipses_for_k_cycle(sigma, epsilon, p, k_cycle)
+            yield ellipses
