@@ -275,7 +275,7 @@ def make_circle_pool():
 
 
 def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, p):
-    conf = model.AttractionPoolConfiguration(gamma, sigma, border, border, density=150)
+    conf = model.AttractionPoolConfiguration(gamma, sigma, border, border, density=50)
     extent = [conf.x_min, conf.x_max, conf.y_min, conf.y_max]
     heatmap, _, attractors = model.get_attraction_pool(conf)
 
@@ -283,24 +283,31 @@ def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, 
 
     stochastic_traces = []
     for attractor in attractors:
-        stochastic_gammas = gamma + epsilon * np.random.normal(0, 1, (1000, 2))
+        stochastic_gammas = gamma + epsilon * np.random.normal(0, 1, (100, 2))
         origin = np.array(list(attractor)[0])
         stochastic_trace = model.get_stochastic_coupling_trace(origin, stochastic_gammas, sigma)
         stochastic_traces.append(stochastic_trace)
 
-    fig, ax = plt.subplots(1, 1)
+    fig, (ax1, ax2) = plt.subplots(1, 2)
 
     fig.set_size_inches(14, 7)
     fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f};$\n$\\epsilon={epsilon:.3f}; p={p:.3f}$", size=15)
 
-    plot.plot_attraction_pool(fig, ax, heatmap, extent)
+    plot.plot_attraction_pool(fig, ax1, heatmap, extent)
+
+    ax2.set_xlabel('$t$', size=15)
+    ax2.set_ylabel('$x-y$', size=15)
 
     for stochastic_trace in stochastic_traces:
-        ax.plot(*stochastic_trace, '.')
+        ax1.plot(*stochastic_trace, '.')
+
+        xs, ys = stochastic_trace
+        # ax2.plot(np.abs(xs - ys))
+        ax2.plot(xs - ys, '.')
 
     for ellipses in ellipses_sets:
         for ellipse in ellipses:
-            ax.plot(*ellipse.T)
+            ax1.plot(*ellipse.T)
 
     plt.show()
 
@@ -309,21 +316,21 @@ def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, 
 def main():
     # show_1d_graphics(True)
     # show_2d_graphics()
-    # show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5))
-
-    # show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2))
-
-    # show_confidence_ellipses_on_attraction_pools(0.7, 0.2, 0.1, (-3, 8), 0.95)
-
-    # show_confidence_ellipses_on_attraction_pools(-0.7, 0.3, 0.1, (-4, 6), 0.95)
-
-    # show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.05, epsilon=0.01, border=(1.5, 2), p=0.95)
-
     show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5), p=0.95)
-    show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.15, border=(-5, 5), p=0.95)
-    show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.2, border=(-5, 5), p=0.95)
-    show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.22, border=(-5, 5), p=0.95)
-    show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.25, border=(-5, 5), p=0.95)
+
+    show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2), p=0.95)
+
+    show_confidence_ellipses_on_attraction_pools(0.7, 0.2, 0.1, (-3, 8), 0.95)
+
+    show_confidence_ellipses_on_attraction_pools(-0.7, 0.3, 0.1, (-4, 6), 0.95)
+
+    show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.05, epsilon=0.01, border=(1.5, 2), p=0.95)
+
+    # for epsilon in np.linspace(0.1, 0.25, 31):
+    #     show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=epsilon, border=(-5, 5), p=0.95)
+
+    # for sigma in np.linspace(0, .49, 50):
+    #     show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=sigma, epsilon=0.1, border=(-6, 8), p=0.99)
 
 
 if __name__ == '__main__':
