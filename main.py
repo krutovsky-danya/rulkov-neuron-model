@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import matplotlib.pyplot as plt
 from functools import wraps
@@ -114,7 +116,7 @@ def show_bifurcation_diagram_2d(gamma: float, sigmas):
     num = 7
     edges = (-5, 5)
     config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num, 500, 100)
-    _, _, attractors = model.get_attraction_pool(config)
+    _, attractors = model.get_attraction_pool(config)
     points_sets = []
 
     for restarting in [True, False]:
@@ -144,7 +146,7 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
     gamma = config.gamma
     sigma = config.sigma
 
-    heatmap, _, attractors = model.get_attraction_pool(config)
+    heatmap, attractors = model.get_attraction_pool(config)
 
     extent = [config.x_min, config.x_max, config.y_min, config.y_max]
 
@@ -197,7 +199,7 @@ def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5,
     config = model.AttractionPoolConfiguration(gamma, sigma, border, border, 20, 500, 20)
 
     extent = [config.x_min, config.x_max, config.y_min, config.y_max]
-    heatmap, _, attractors = model.get_attraction_pool(config)
+    heatmap, attractors = model.get_attraction_pool(config)
 
     s = np.random.normal(0, 1, (300, 2))
 
@@ -277,7 +279,7 @@ def make_circle_pool():
 def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, p):
     conf = model.AttractionPoolConfiguration(gamma, sigma, border, border, density=50)
     extent = [conf.x_min, conf.x_max, conf.y_min, conf.y_max]
-    heatmap, _, attractors = model.get_attraction_pool(conf)
+    heatmap, attractors = model.get_attraction_pool(conf)
 
     ellipses_sets = model.get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p)
 
@@ -334,5 +336,39 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
     # make_circle_pool()
+
+    # a = np.array([
+    #     [-1, -6],
+    #     [2, 6]
+    # ])
+    a = np.array([
+        [8, 0],
+        [0, 2]
+    ])
+
+    w, v = np.linalg.eig(a)
+
+    k = 1
+    z = (2 * w) ** 0.5 * 0.1 * k
+
+    t = np.linspace(0, 2 * math.pi, 5)
+
+    circle = np.array([np.cos(t), np.sin(t)])
+    v1, v2 = v.T
+    (v11, v12), (v21, v22) = v2, v1
+    z1, z2 = (z * circle.T).T
+    # ellipse = np.array([z1 * v22 - z2 * v12, z2 * v11 - z1 * v21]).T
+    ellipse = np.array([z2 * v11 - z1 * v21, z1 * v22 - z2 * v12]).T
+
+    plt.plot(*circle)
+    plt.plot(*ellipse.T)
+    plt.plot(*v1, '.')
+    plt.plot(*v2, '.')
+    plt.xlim(-1.1, 1.1)
+    plt.ylim(-1.1, 1.1)
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.show()
+

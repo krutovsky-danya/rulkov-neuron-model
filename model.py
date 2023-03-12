@@ -222,7 +222,7 @@ def get_attraction_pool(config: AttractionPoolConfiguration):
     if len(attractors[0]) == 0:
         attractors.remove([])
 
-    return cycles_map, None, attractors
+    return cycles_map, attractors
 
 
 def stochastic_coupling_f(x, y, gamma_x, gamma_y, sigma):
