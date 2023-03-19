@@ -6,7 +6,7 @@ import numpy as np
 
 def show_stable_points(xs, gammas, bounds: Optional[np.ndarray] = None) -> None:
     fig, (ax1, ax2) = plt.subplots(1, 2)
-    fig.set_size_inches(15, 7)
+    fig.set_size_inches(14, 7)
 
     ax1.set_title('$x=g(\\gamma)$')
     ax1.set_xlabel('$\\gamma$', size=20)
@@ -21,8 +21,15 @@ def show_stable_points(xs, gammas, bounds: Optional[np.ndarray] = None) -> None:
     if bounds is not None:
         ax1.plot(*bounds[::-1], 'o')
         ax2.plot(*bounds, 'o')
+        for i, bound in enumerate(bounds.T):
+            ax1.annotate(f"$\\gamma_{i}$", bound[::-1] + np.array([0.1, 0]))
+        for i, bound in enumerate(bounds.T):
+            ax2.annotate(f"$\\gamma_{i}$", bound + np.array([0, 0.2]))
 
-    fig.suptitle("Stable points")
+    fig.suptitle("Точки покоя")
+
+    plt.savefig("images/1d/stable_points.png")
+
     plt.show()
 
 
@@ -41,37 +48,46 @@ def show_repeller_position(xs, ys, bounds):
     plt.show()
 
 
-def show_bifurcation_diagram(attractor, repeller, chaotic_points):
+def show_bifurcation_diagram(attractor, repeller, chaotic_points, stable_points):
     plt.figure(figsize=(14, 7))
     plt.xlabel('$\\gamma$', size=20)
     plt.ylabel('$x$', size=20, rotation=0)
 
+    plt.plot(*stable_points, '--')
     plt.plot(*chaotic_points, '.', markersize=0.01, label='Хаотическая')
-    plt.plot(*repeller, label='Неустойчивая')
+    plt.plot(*repeller, '--', label='Неустойчивая')
     plt.plot(*attractor, label='Устойчивая')
 
     plt.legend()
+
+    plt.savefig("images/1d/bifurcation.png")
+
     plt.show()
 
 
-def show_lyapunov_exponent(chaotic, attractor):
-    plt.figure(figsize=(20, 10))
+def show_lyapunov_exponent(chaotic, attractor, repeller):
+    plt.figure(figsize=(14, 7))
 
     plt.plot(*chaotic, label='Неустойчивой')
     plt.plot(*attractor, label='Устойчивой')
-    plt.plot(chaotic[0, [0, -1]], np.zeros(2))
+    plt.plot(*repeller, label='Repeller')
+    plt.plot(chaotic[0, [0, -1]], np.zeros(2), 'k')
 
     plt.xlabel('$\\gamma$', size=20)
     plt.ylabel('$\\lambda$', size=20, rotation=0)
 
+    plt.ylim((-4, 2))
+
     plt.legend()
+
+    plt.savefig("images/1d/lyapunov_exponent.png")
 
     plt.show()
 
 
 def show_phase_portraits(gamma, graphic, sequences, leaders):
     fig, (ax1, ax2) = plt.subplots(1, 2)
-    fig.set_size_inches(18, 8)
+    fig.set_size_inches(14, 7)
 
     for xs, (x, y) in zip(sequences, leaders):
         ax1.plot(x, y)
@@ -93,7 +109,7 @@ def show_phase_portraits(gamma, graphic, sequences, leaders):
 
 
 def show_bifurcation_diagram_2d(gamma: float, points_sets):
-    plt.figure(figsize=(18, 9))
+    plt.figure(figsize=(14, 7))
     for points_set in points_sets:
         plt.plot(*points_set, '.', markersize=0.1)
     plt.title(f"$\\gamma={gamma:.4f}$", size=20)

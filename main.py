@@ -23,12 +23,11 @@ def timeit(func):
     return timeit_wrapper
 
 
-def show_stable_points(show_graphics, xs):
-    gammas = model.invert_stable_point(xs)
+def show_stable_points(show_graphics, xs, gammas):
     if show_graphics:
         plot.show_stable_points(xs, gammas)
     bounds = model.get_repeller_bounds(xs)
-    print(bounds)
+    print(bounds.T)
     if show_graphics:
         plot.show_stable_points(xs, gammas, bounds)
     return bounds
@@ -40,27 +39,45 @@ def show_where_is_repeller(bounds, show_graphics, xs):
         plot.show_repeller_position(xs, ys_, bounds)
 
 
-def show_bifurcation(show_graphics, x_bounds, x_min):
+def show_bifurcation(show_graphics, x_bounds, x_min, stable_points):
     repeller_xs = np.linspace(*x_bounds)
     repeller_ys = model.invert_stable_point(repeller_xs)
     attractor_xs = np.linspace(x_min, min(*x_bounds))
     attractor_ys = model.invert_stable_point(attractor_xs)
     gamma_bound = model.invert_stable_point(x_bounds[1])
-    chaotic_gammas = np.linspace(gamma_bound, 1, 600)
-    chaotic_points = model.get_chaotic_points_cloud(chaotic_gammas)
+    chaotic_gammas = np.linspace(gamma_bound, 1, 6001)
+    chaotic_points = model.get_chaotic_points_cloud(chaotic_gammas, reset_x=True)
     if show_graphics:
-        plot.show_bifurcation_diagram((attractor_ys, attractor_xs), (repeller_ys, repeller_xs), chaotic_points)
-    return (attractor_xs, attractor_ys), chaotic_points
+        plot.show_bifurcation_diagram((attractor_ys, attractor_xs), (repeller_ys, repeller_xs), chaotic_points, stable_points)
+    return (attractor_xs, attractor_ys), (repeller_xs, repeller_ys), chaotic_points
 
 
-def show_lyapunov(chaotic_points, attractor, show_graphics=False):
+def make_bifurcation_diagram(alpha=4.1):
+    left_gamma = model.invert_stable_point(-4)
+    gammas = np.linspace(left_gamma, 1, 1001)
+
+    for gamma in gammas:
+        roots = np.roots([1, -gamma, 1, -(gamma + alpha)])
+
+        starts = list(np.random.uniform(-4, 4, 100))
+
+        for root in roots:
+            if root == root.real:
+                starts.append(root.real)
+
+        for start in starts:
+            seq = model.get_x_sequence(gamma, start, skip_count=1000)
+
+
+def show_lyapunov(chaotic_points, attractor, repeller, show_graphics=False):
     grouped_chaotic_points = list(model.group_chaotic_points(chaotic_points))
 
     chaotic_lyapunov_exponent = model.get_lyapunov_exponent(grouped_chaotic_points)
     attractor_lyapunov_exponent = model.get_lyapunov_exponent(attractor)
+    repeller_lyapunov_exponent = model.get_lyapunov_exponent(repeller)
 
     if show_graphics:
-        plot.show_lyapunov_exponent(chaotic_lyapunov_exponent, attractor_lyapunov_exponent)
+        plot.show_lyapunov_exponent(chaotic_lyapunov_exponent, attractor_lyapunov_exponent, repeller_lyapunov_exponent)
 
 
 def get_sequence_generator(gamma, steps_count=100, skip_count=0):
@@ -100,14 +117,17 @@ def show_several_phase_portraits(show_graphics):
 def show_1d_graphics(show_graphics=False):
     x_min = -4
 
-    xs = np.linspace(x_min, 1, 500)
-    bounds = show_stable_points(show_graphics, xs)
+    xs = np.linspace(x_min, 2, 500)
+    gammas = model.invert_stable_point(xs)
+    bounds = show_stable_points(show_graphics, xs, gammas)
 
-    show_where_is_repeller(bounds, show_graphics, xs)
+    # return
 
-    attractor, chaotic_points = show_bifurcation(show_graphics, bounds[0], x_min)
+    # show_where_is_repeller(bounds, show_graphics, xs)
 
-    show_lyapunov(chaotic_points, zip(*attractor[::-1]), show_graphics)
+    attractor, repeller, chaotic_points = show_bifurcation(show_graphics, bounds[0], x_min, (gammas, xs))
+
+    show_lyapunov(chaotic_points, zip(*attractor[::-1]), zip(*repeller[::-1]), show_graphics)
 
     show_several_phase_portraits(show_graphics)
 
@@ -316,17 +336,17 @@ def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, 
 
 @timeit
 def main():
-    # show_1d_graphics(True)
+    show_1d_graphics(True)
     # show_2d_graphics()
-    show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5), p=0.95)
-
-    show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2), p=0.95)
-
-    show_confidence_ellipses_on_attraction_pools(0.7, 0.2, 0.1, (-3, 8), 0.95)
-
-    show_confidence_ellipses_on_attraction_pools(-0.7, 0.3, 0.1, (-4, 6), 0.95)
-
-    show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.05, epsilon=0.01, border=(1.5, 2), p=0.95)
+    # show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5), p=0.95)
+    #
+    # show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2), p=0.95)
+    #
+    # show_confidence_ellipses_on_attraction_pools(0.7, 0.2, 0.1, (-3, 8), 0.95)
+    #
+    # show_confidence_ellipses_on_attraction_pools(-0.7, 0.3, 0.1, (-4, 6), 0.95)
+    #
+    # show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.05, epsilon=0.01, border=(1.5, 2), p=0.95)
 
     # for epsilon in np.linspace(0.1, 0.25, 31):
     #     show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=epsilon, border=(-5, 5), p=0.95)
@@ -336,39 +356,4 @@ def main():
 
 
 if __name__ == '__main__':
-    # main()
-    # make_circle_pool()
-
-    # a = np.array([
-    #     [-1, -6],
-    #     [2, 6]
-    # ])
-    a = np.array([
-        [8, 0],
-        [0, 2]
-    ])
-
-    w, v = np.linalg.eig(a)
-
-    k = 1
-    z = (2 * w) ** 0.5 * 0.1 * k
-
-    t = np.linspace(0, 2 * math.pi, 5)
-
-    circle = np.array([np.cos(t), np.sin(t)])
-    v1, v2 = v.T
-    (v11, v12), (v21, v22) = v2, v1
-    z1, z2 = (z * circle.T).T
-    # ellipse = np.array([z1 * v22 - z2 * v12, z2 * v11 - z1 * v21]).T
-    ellipse = np.array([z2 * v11 - z1 * v21, z1 * v22 - z2 * v12]).T
-
-    plt.plot(*circle)
-    plt.plot(*ellipse.T)
-    plt.plot(*v1, '.')
-    plt.plot(*v2, '.')
-    plt.xlim(-1.1, 1.1)
-    plt.ylim(-1.1, 1.1)
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.show()
-
+    main()

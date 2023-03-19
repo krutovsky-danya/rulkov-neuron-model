@@ -64,7 +64,7 @@ def get_repeller_bounds(xs, alpha: float = 4.1) -> np.ndarray:
 
 
 @njit()
-def get_chaotic_points_cloud(gammas, skip_points=2000, points_per_gamma=1000, x0=0, reset_x=False) -> np.ndarray:
+def get_chaotic_points_cloud(gammas, skip_points=2000, points_per_gamma=300, x0=0, reset_x=False) -> np.ndarray:
     chaotic_points = []
 
     x = x0
