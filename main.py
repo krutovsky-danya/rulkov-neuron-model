@@ -23,16 +23,6 @@ def timeit(func):
     return timeit_wrapper
 
 
-def show_stable_points(show_graphics, xs, gammas):
-    if show_graphics:
-        plot.show_stable_points(xs, gammas)
-    bounds = model.get_repeller_bounds(xs)
-    print(bounds.T)
-    if show_graphics:
-        plot.show_stable_points(xs, gammas, bounds)
-    return bounds
-
-
 def show_where_is_repeller(bounds, show_graphics, xs):
     ys_ = model.invert_stable_point_(xs)
     if show_graphics:
@@ -48,7 +38,8 @@ def show_bifurcation(show_graphics, x_bounds, x_min, stable_points):
     chaotic_gammas = np.linspace(gamma_bound, 1, 6001)
     chaotic_points = model.get_chaotic_points_cloud(chaotic_gammas, reset_x=True)
     if show_graphics:
-        plot.show_bifurcation_diagram((attractor_ys, attractor_xs), (repeller_ys, repeller_xs), chaotic_points, stable_points)
+        plot.show_bifurcation_diagram((attractor_ys, attractor_xs), (repeller_ys, repeller_xs), chaotic_points,
+                                      stable_points)
     return (attractor_xs, attractor_ys), (repeller_xs, repeller_ys), chaotic_points
 
 
@@ -75,9 +66,14 @@ def show_lyapunov(chaotic_points, attractor, repeller, show_graphics=False):
     chaotic_lyapunov_exponent = model.get_lyapunov_exponent(grouped_chaotic_points)
     attractor_lyapunov_exponent = model.get_lyapunov_exponent(attractor)
     repeller_lyapunov_exponent = model.get_lyapunov_exponent(repeller)
+    chaotic_but_stable_xs = np.linspace(-0.12584, 1.7, 1000)
+    chaotic_but_stable_gammas = model.invert_stable_point(chaotic_but_stable_xs)
+    chaotic_but_stable = zip(chaotic_but_stable_gammas, chaotic_but_stable_xs)
+    chaotic_but_stable = model.get_lyapunov_exponent(chaotic_but_stable)
 
     if show_graphics:
-        plot.show_lyapunov_exponent(chaotic_lyapunov_exponent, attractor_lyapunov_exponent, repeller_lyapunov_exponent)
+        plot.show_lyapunov_exponent(chaotic_lyapunov_exponent, attractor_lyapunov_exponent, repeller_lyapunov_exponent,
+                                    chaotic_but_stable)
 
 
 def get_sequence_generator(gamma, steps_count=100, skip_count=0):
@@ -117,13 +113,31 @@ def show_several_phase_portraits(show_graphics):
 def show_1d_graphics(show_graphics=False):
     x_min = -4
 
-    xs = np.linspace(x_min, 2, 500)
-    gammas = model.invert_stable_point(xs)
-    bounds = show_stable_points(show_graphics, xs, gammas)
+    # xs = np.linspace(x_min, 2, 500)
+    # gammas = model.invert_stable_point(xs)
+    # bounds = model.get_repeller_bounds(xs)
 
-    # return
+    # plot.show_stable_points(xs, gammas, bounds)
 
-    # show_where_is_repeller(bounds, show_graphics, xs)
+    bifurcation_gammas = np.linspace(-4.5, 1, 6001)
+    bifurcation_xs = np.random.uniform(-4, 4, 100)
+    attracted_points = model.get_points_distribution(bifurcation_gammas, bifurcation_xs, 1000, 10)
+
+    fig, axis = plt.subplots(1, 1)
+    plot.plot_bifurcation_diagram(fig, axis, attracted_points.T)
+    plt.savefig("bifurcation_only.png")
+    plt.show()
+
+    bifurcation_xs = np.linspace(-4, 1.7, 100)
+    bifurcation_gammas = model.invert_stable_point(bifurcation_xs)
+    bifurcation_stable_points = bifurcation_gammas, bifurcation_xs
+
+    fig, axis = plt.subplots(1, 1)
+    plot.plot_bifurcation_diagram(fig, axis, attracted_points.T, bifurcation_stable_points)
+    plt.savefig("bifurcation_with_stable.png")
+    plt.show()
+
+    return
 
     attractor, repeller, chaotic_points = show_bifurcation(show_graphics, bounds[0], x_min, (gammas, xs))
 
