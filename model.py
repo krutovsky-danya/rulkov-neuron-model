@@ -63,6 +63,17 @@ def get_repeller_bounds(xs, alpha: float = 4.1) -> np.ndarray:
     return np.array([bounds, invert_stable_point(bounds)]).T
 
 
+def get_repeller_bounds_fast(alpha=4.1):
+    roots = np.roots([1, 0, 1, 2 * alpha, 1])
+    real_roots = []
+
+    for root in roots:
+        if abs(root.real - root) < 1e-7:
+            real_roots.append(root.real)
+
+    return sorted(real_roots)
+
+
 @njit()
 def get_chaotic_points_cloud(gammas, skip_points=2000, points_per_gamma=300, x0=0, reset_x=False) -> np.ndarray:
     chaotic_points = []
@@ -95,7 +106,7 @@ def get_points_distribution(gammas: np.ndarray, xs: np.ndarray, skip, take):
                 x = f(x, gamma=gamma)
                 points[gamma_i * xs_count * take + x_i * take + i] = np.array((gamma, x))
 
-    return points
+    return points.T
 
 
 def group_chaotic_points(chaotic_points: np.ndarray) -> Generator[Tuple[float, np.ndarray], None, Any]:

@@ -110,36 +110,37 @@ def show_several_phase_portraits(show_graphics):
     # show_portraits(-3.3, 0.5, steps_count=60, skip_count=10000)
 
 
+def get_stable_points(x_min, x_max, count):
+    xs = np.linspace(x_min, x_max, count)
+    gammas = model.invert_stable_point(xs)
+
+    return np.array((gammas, xs))
+
+
 def show_1d_graphics(show_graphics=False):
     x_min = -4
 
-    # xs = np.linspace(x_min, 2, 500)
-    # gammas = model.invert_stable_point(xs)
-    # bounds = model.get_repeller_bounds(xs)
+    xs = np.linspace(x_min, 2, 500)
+    gammas = model.invert_stable_point(xs)
+    bounds = model.get_repeller_bounds(xs)
 
-    # plot.show_stable_points(xs, gammas, bounds)
+    plot.show_stable_points(xs, gammas, bounds)
 
     bifurcation_gammas = np.linspace(-4.5, 1, 6001)
     bifurcation_xs = np.random.uniform(-4, 4, 100)
     attracted_points = model.get_points_distribution(bifurcation_gammas, bifurcation_xs, 1000, 10)
 
     fig, axis = plt.subplots(1, 1)
-    plot.plot_bifurcation_diagram(fig, axis, attracted_points.T)
-    plt.savefig("bifurcation_only.png")
+    plot.plot_bifurcation_diagram(fig, axis, attracted_points)
+    plt.savefig("images/1d/bifurcation_only.png")
     plt.show()
 
-    bifurcation_xs = np.linspace(-4, 1.7, 100)
-    bifurcation_gammas = model.invert_stable_point(bifurcation_xs)
-    bifurcation_stable_points = bifurcation_gammas, bifurcation_xs
-
     fig, axis = plt.subplots(1, 1)
-    plot.plot_bifurcation_diagram(fig, axis, attracted_points.T, bifurcation_stable_points)
-    plt.savefig("bifurcation_with_stable.png")
+    plot.plot_bifurcation_diagram(fig, axis, attracted_points, get_stable_points(-4, 1.7, 500))
+    plt.savefig("images/1d/bifurcation_with_stable.png")
     plt.show()
 
     return
-
-    attractor, repeller, chaotic_points = show_bifurcation(show_graphics, bounds[0], x_min, (gammas, xs))
 
     show_lyapunov(chaotic_points, zip(*attractor[::-1]), zip(*repeller[::-1]), show_graphics)
 
