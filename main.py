@@ -50,7 +50,7 @@ def show_portraits(gamma, *starts, steps_count=100, skip_count=0):
     plot.show_phase_portraits(gamma, (xs, ys), sequences, leaders)
 
 
-def show_several_phase_portraits(show_graphics):
+def show_several_phase_portraits(show_graphics=True):
     if not show_graphics:
         return
     show_portraits(-3.3, -3.1, -0.8, 0)
@@ -126,11 +126,9 @@ def show_lyapunov_exponent():
 def show_1d_graphics():
     # show_stable_points()
     # show_bifurcation()
-    show_lyapunov_exponent()
+    # show_lyapunov_exponent()
 
-    return
-
-    show_several_phase_portraits(show_graphics)
+    show_several_phase_portraits()
 
 
 def show_bifurcation_diagram_2d(gamma: float, sigmas):
