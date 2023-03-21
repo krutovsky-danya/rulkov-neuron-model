@@ -88,25 +88,18 @@ def plot_bifurcation_diagram(fig: plt.Figure, axis: plt.Axes, points_attraction,
     return fig, axis
 
 
-def show_lyapunov_exponent(chaotic, attractor, repeller, chaotic_but_stable):
-    plt.figure(figsize=(14, 7))
+def plot_lyapunov_exponent(fig: plt.Figure, axis: plt.axis, gammas_bound, *exponents):
+    fig.set_size_inches((14, 7))
 
-    plt.plot(*chaotic, label='Неустойчивой')
-    plt.plot(*attractor, label='Устойчивой')
-    plt.plot(*repeller, label='Repeller')
-    plt.plot(*chaotic_but_stable, label='chaotic but stable')
-    plt.plot(chaotic[0, [0, -1]], np.zeros(2), 'k')
+    axis.set_xlabel('$\\gamma$', size=14)
+    axis.set_ylabel('$\\lambda$', size=14, rotation=0)
 
-    plt.xlabel('$\\gamma$', size=20)
-    plt.ylabel('$\\lambda$', size=20, rotation=0)
+    axis.plot(gammas_bound, [0, 0], 'k')
 
-    plt.ylim((-4, 2))
+    for exponent in exponents:
+        axis.plot(*exponent)
 
-    plt.legend()
-
-    plt.savefig("images/1d/lyapunov_exponent.png")
-
-    plt.show()
+    return fig, axis
 
 
 def show_phase_portraits(gamma, graphic, sequences, leaders):
