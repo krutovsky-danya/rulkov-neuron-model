@@ -74,16 +74,18 @@ def show_bifurcation_diagram(attractor, repeller, chaotic_points, stable_points)
     plt.show()
 
 
-def plot_bifurcation_diagram(fig: plt.Figure, axis: plt.Axes, points_attraction, stable_points=None):
+def plot_bifurcation_diagram(fig: plt.Figure, axis: plt.Axes, points_attraction, stable_points_set):
     fig.set_size_inches((14, 7))
 
     axis.set_xlabel('$\\gamma$', size=15)
     axis.set_ylabel('$x$', size=15, rotation=0)
 
-    if stable_points is not None:
-        axis.plot(*stable_points, '--k')
-
     axis.plot(*points_attraction, '.', markersize=0.01)
+
+    for stable_points in stable_points_set:
+        axis.plot(*stable_points, '--')
+
+    axis.set_ylim(-4, 4)
 
     return fig, axis
 

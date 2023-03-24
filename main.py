@@ -1,4 +1,5 @@
 import math
+import os
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -80,35 +81,35 @@ def show_stable_points():
     plot.show_stable_points(xs, gammas, bounds)
 
 
-def show_bifurcation():
-    stable_points = get_stable_points(-4, 1.7, 500)
-    bifurcation_gammas = np.linspace(-4.5, 1, 6001)
-    bifurcation_xs = np.random.uniform(-4, 4, 100)
-    attracted_points = model.get_points_distribution(bifurcation_gammas, bifurcation_xs, 1000, 10)
+def show_bifurcation(attractor, repeller, chaos):
+    gamma_1 = -4.16187
+    stable_points_set = [attractor, repeller, chaos]
+    bifurcation_gammas = np.linspace(gamma_1, 1, 6001)
+    bifurcation_xs = np.array([0])
+    attracted_points = model.get_points_distribution(bifurcation_gammas, bifurcation_xs, 1000, 200)
 
     fig, axis = plt.subplots(1, 1)
-    plot.plot_bifurcation_diagram(fig, axis, attracted_points)
+    plot.plot_bifurcation_diagram(fig, axis, attracted_points, [])
     plt.savefig("images/1d/bifurcation_only.png")
     plt.show()
 
     fig, axis = plt.subplots(1, 1)
-    plot.plot_bifurcation_diagram(fig, axis, attracted_points, stable_points)
+    plot.plot_bifurcation_diagram(fig, axis, attracted_points, stable_points_set)
     plt.savefig("images/1d/bifurcation_with_stable.png")
     plt.show()
 
 
-def show_lyapunov_exponent():
+def show_lyapunov_exponent(attractor, repeller, chaos):
     x_min = -4
     x_max = 2
     x_0 = -0.12584
-    x_1 = -1.62956
     bifurcation_gamma_min = model.invert_stable_point(x_0)
     bifurcation_gamma_max = model.invert_stable_point(x_max)
     gammas_bound = model.invert_stable_point(np.array([x_min, x_max]))
 
-    stable_attractor = model.get_lyapunov_exponent(get_stable_points(x_min, x_1, 500).T)
-    stable_repeller = model.get_lyapunov_exponent(get_stable_points(x_1, x_0, 500).T)
-    stable_chaotic = model.get_lyapunov_exponent(get_stable_points(x_0, x_max, 500).T)
+    stable_attractor = model.get_lyapunov_exponent(attractor.T)
+    stable_repeller = model.get_lyapunov_exponent(repeller.T)
+    stable_chaotic = model.get_lyapunov_exponent(chaos.T)
 
     bifurcation_gammas = np.linspace(bifurcation_gamma_min, bifurcation_gamma_max, 601)
     bifurcation_xs = np.array([0])
@@ -124,11 +125,20 @@ def show_lyapunov_exponent():
 
 
 def show_1d_graphics():
-    # show_stable_points()
-    # show_bifurcation()
-    # show_lyapunov_exponent()
+    x_min = -3.9
+    x_max = 1.7
+    x_0 = -0.12584
+    x_1 = -1.62956
+    gamma_1 = -4.16187
+    attractor = get_stable_points(x_min, x_1, 500)
+    repeller = get_stable_points(x_1, x_0, 500)
+    chaotic = get_stable_points(x_0, x_max, 500)
 
-    show_several_phase_portraits()
+    show_stable_points()
+    show_bifurcation(attractor, repeller, chaotic)
+    show_lyapunov_exponent(attractor, repeller, chaotic)
+
+    # show_several_phase_portraits()
 
 
 def show_bifurcation_diagram_2d(gamma: float, sigmas):
@@ -355,4 +365,8 @@ def main():
 
 
 if __name__ == '__main__':
+    try:
+        os.makedirs('images/1d')
+    except OSError as error:
+        print(error)
     main()
