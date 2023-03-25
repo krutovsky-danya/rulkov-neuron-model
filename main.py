@@ -83,15 +83,20 @@ def show_stable_points():
 
 def show_bifurcation(attractor, repeller, chaos):
     gamma_1 = -4.16187
+    x_1 = -1.62956
+
     stable_points_set = [attractor, repeller, chaos]
     bifurcation_gammas = np.linspace(gamma_1, 1, 6001)
-    bifurcation_xs = np.array([0])
-    attracted_points = model.get_points_distribution(bifurcation_gammas, bifurcation_xs, 1000, 200)
+    bifurcation_xs = np.linspace(-4, 4, 9)
+    attracted_points = model.get_points_distribution(bifurcation_gammas, bifurcation_xs, 1000, 100)
 
     fig, axis = plt.subplots(1, 1)
     plot.plot_bifurcation_diagram(fig, axis, attracted_points, [])
     plt.savefig("images/1d/bifurcation_only.png")
     plt.show()
+
+    mask = attracted_points[1] > x_1
+    attracted_points = attracted_points[:, mask]
 
     fig, axis = plt.subplots(1, 1)
     plot.plot_bifurcation_diagram(fig, axis, attracted_points, stable_points_set)
