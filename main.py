@@ -45,18 +45,19 @@ def show_portraits(gamma, *starts, steps_count=100, skip_count=0):
     x_min = min(map(min, sequences)) - 0.5
     x_max = max(map(max, sequences)) + 0.5
 
-    xs = np.linspace(x_min, x_max)
+    xs = np.linspace(x_min, x_max, 500)
     ys = model.f(xs, gamma=gamma)
 
     plot.show_phase_portraits(gamma, (xs, ys), sequences, leaders)
 
 
-def show_several_phase_portraits(show_graphics=True):
-    if not show_graphics:
-        return
-    show_portraits(-3.3, -3.1, -0.8, 0)
-    show_portraits(-3, -3.1, -1.09, 0.4)
-    show_portraits(-3.3, -3.1, -1.09, 0.5)
+def show_several_phase_portraits():
+    for i, gamma in enumerate(np.linspace(-5, -3, 51)):
+        show_portraits(gamma, *np.linspace(-2, 2, 51))
+
+    # show_portraits(-3.3, -3.1, -0.8, 0)
+    # show_portraits(-3, -3.1, -1.09, 0.4)
+    # show_portraits(-3.3, -3.1, -1.09, 0.5)
     # show_portraits(-3.55, 0.5, steps_count=20, skip_count=150)
     # show_portraits(-3.4875, 0.5, steps_count=20, skip_count=150)
     # show_portraits(-3.494925, 0.5, steps_count=24, skip_count=650)
@@ -340,6 +341,51 @@ def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, 
     plt.show()
 
 
+def do_something():
+    gammas_count = 501
+    xs_count = 501
+
+    gamma_1 = -4.16187
+    gamma_2 = -3.3
+    gammas = np.linspace(gamma_1 - 0.1, gamma_2 + 0.1, gammas_count)
+
+    x_1 = -1
+    x_2 = 1
+    xs = np.linspace(x_1, x_2, xs_count)
+    pool = np.zeros((gammas_count, xs_count))
+
+    for i, gamma in enumerate(gammas):
+        attractors = []
+        for j, x in enumerate(xs):
+            xss = model.get_x_sequence(gamma, x, 100, skip_count=1000)
+            xss = np.round(xss, 5)
+            frozen = frozenset(list(xss))
+
+            index = -1
+            if len(frozen) < 80:
+                if frozen in attractors:
+                    index = attractors.index(frozen)
+                else:
+                    index = len(attractors)
+                    attractors.append(frozen)
+
+            index = min(3, index)
+
+            pool[xs_count - j - 1, i] = index
+
+    bifurcation_gammas = gammas
+    bifurcation_xs = np.array([0])
+    attracted_points = model.get_points_distribution(bifurcation_gammas, bifurcation_xs, 1000, 100)
+
+    mask = attracted_points[1] > x_1
+    attracted_points = attracted_points[:, mask]
+
+    extent = [gamma_1 - 0.1, gamma_2 + 0.1, x_1, x_2]
+    plt.imshow(pool, extent=extent)
+    plt.plot(*attracted_points, '.r', markersize=0.01)
+    plt.show()
+
+
 @timeit
 def main():
     show_1d_graphics()
@@ -366,4 +412,8 @@ if __name__ == '__main__':
         os.makedirs('images/1d')
     except OSError as error:
         print(error)
-    main()
+
+    do_something()
+    show_portraits(-4, *np.linspace(-2, 2, 51))
+
+    # main()

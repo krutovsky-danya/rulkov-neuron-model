@@ -110,7 +110,7 @@ def show_phase_portraits(gamma, graphic, sequences, leaders):
 
     for xs, (x, y) in zip(sequences, leaders):
         ax1.plot(x, y)
-        ax2.plot(xs)
+        ax2.plot(xs, '.')
 
     xs, ys = graphic
     ax1.plot(*graphic)
