@@ -37,7 +37,9 @@ def get_sequence_generator(gamma, steps_count=100, skip_count=0):
     return func
 
 
-def show_portraits(gamma, *starts, steps_count=100, skip_count=0):
+def show_portraits(gamma, *starts, steps_count=100, skip_count=0, filename=None):
+    stable_points = model.get_stable_points_fast(gamma=gamma)
+
     sequence_func = get_sequence_generator(gamma, steps_count, skip_count)
     sequences = list(map(sequence_func, starts))
     leaders = map(model.get_leader, sequences)
@@ -48,21 +50,39 @@ def show_portraits(gamma, *starts, steps_count=100, skip_count=0):
     xs = np.linspace(x_min, x_max, 500)
     ys = model.f(xs, gamma=gamma)
 
-    plot.show_phase_portraits(gamma, (xs, ys), sequences, leaders)
+    for sequence in sequences:
+        print(sequence[-1])
+
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+
+    plot.plot_phase_portraits(fig, ax1, ax2, gamma, (xs, ys), sequences, leaders)
+
+    for stable_point in stable_points:
+        if x_min < stable_point < x_max:
+            ax2.plot([0, steps_count], [stable_point, stable_point], '--')
+
+    ax1.set_xlim(x_min, x_max)
+    ax2.set_ylim(x_min, x_max)
+    ax2.set_ylim(x_min, x_max)
+
+    if filename is not None:
+        plt.savefig(filename)
+
+    plt.show()
 
 
 def show_several_phase_portraits():
-    for i, gamma in enumerate(np.linspace(-5, -3, 51)):
-        show_portraits(gamma, *np.linspace(-2, 2, 51))
-
+    show_portraits(1, 0, steps_count=40, filename='images/1d/single_attraction.png')
+    show_portraits(-0.1, 0.15203560313851436, 1.35, steps_count=41, filename='images/1d/two_cycle.png')
+    return
     # show_portraits(-3.3, -3.1, -0.8, 0)
-    # show_portraits(-3, -3.1, -1.09, 0.4)
-    # show_portraits(-3.3, -3.1, -1.09, 0.5)
-    # show_portraits(-3.55, 0.5, steps_count=20, skip_count=150)
-    # show_portraits(-3.4875, 0.5, steps_count=20, skip_count=150)
-    # show_portraits(-3.494925, 0.5, steps_count=24, skip_count=650)
-    # show_portraits(-3.4949, 0.5, steps_count=20, skip_count=1150)
-    # show_portraits(-3.3, 0.5, steps_count=60, skip_count=10000)
+    show_portraits(-3, -3.1, -1.09, 0.4)
+    show_portraits(-3.3, -3.1, -1.09, 0.5)
+    show_portraits(-3.55, 0.5, steps_count=20, skip_count=150)
+    show_portraits(-3.4875, 0.5, steps_count=20, skip_count=150)
+    show_portraits(-3.494925, 0.5, steps_count=24, skip_count=650)
+    show_portraits(-3.4949, 0.5, steps_count=20, skip_count=1150)
+    show_portraits(-3.3, 0.5, steps_count=60, skip_count=10000)
 
 
 def get_stable_points(x_min, x_max, count):
@@ -413,7 +433,8 @@ if __name__ == '__main__':
     except OSError as error:
         print(error)
 
-    do_something()
-    show_portraits(-4, *np.linspace(-2, 2, 51))
+    # do_something()
+
+    show_several_phase_portraits()
 
     # main()

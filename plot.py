@@ -57,23 +57,6 @@ def show_repeller_position(xs, ys, bounds):
     plt.show()
 
 
-def show_bifurcation_diagram(attractor, repeller, chaotic_points, stable_points):
-    plt.figure(figsize=(14, 7))
-    plt.xlabel('$\\gamma$', size=20)
-    plt.ylabel('$x$', size=20, rotation=0)
-
-    plt.plot(*stable_points, '--')
-    plt.plot(*chaotic_points, '.', markersize=0.01, label='Хаотическая')
-    plt.plot(*repeller, '--', label='Неустойчивая')
-    plt.plot(*attractor, label='Устойчивая')
-
-    plt.legend()
-
-    plt.savefig("images/1d/bifurcation.png")
-
-    plt.show()
-
-
 def plot_bifurcation_diagram(fig: plt.Figure, axis: plt.Axes, points_attraction, stable_points_set):
     fig.set_size_inches((14, 7))
 
@@ -104,26 +87,30 @@ def plot_lyapunov_exponent(fig: plt.Figure, axis: plt.axis, gammas_bound, *expon
     return fig, axis
 
 
-def show_phase_portraits(gamma, graphic, sequences, leaders):
-    fig, (ax1, ax2) = plt.subplots(1, 2)
+def plot_phase_portraits(fig: plt.Figure, ax1: plt.Axes, ax2: plt.Axes, gamma, graphic, sequences, leaders):
     fig.set_size_inches(14, 7)
 
     for xs, (x, y) in zip(sequences, leaders):
         ax1.plot(x, y)
-        ax2.plot(xs, '.')
+        ax2.plot(xs)
 
     xs, ys = graphic
     ax1.plot(*graphic)
     ax1.plot(xs, xs)
-    ax1.set_title("Iterations")
-    ax1.set_xlabel("$x_t$", size=20)
-    ax1.set_ylabel("$x_{t+1}$", size=20, rotation=0)
+    ax1.set_xlabel("$x_t$", size=14)
+    ax1.set_ylabel("$x_{t+1}$", size=14, rotation=0)
 
-    ax2.set_title("Time series")
-    ax2.set_xlabel("$t$", size=20)
-    ax2.set_ylabel("$x_t$", size=20, rotation=0)
+    ax2.set_xlabel("$t$", size=14)
+    ax2.set_ylabel("$x_t$", size=14, rotation=0)
 
-    fig.suptitle(f"Фазовый портрет $\\gamma={gamma}$")
+    fig.suptitle(f"$\\gamma={gamma}$")
+
+
+def show_phase_portraits(gamma, graphic, sequences, leaders):
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+
+    plot_phase_portraits(fig, ax1, ax2, gamma, graphic, sequences, leaders)
+
     plt.show()
 
 

@@ -63,15 +63,23 @@ def get_repeller_bounds(xs, alpha: float = 4.1) -> np.ndarray:
     return np.array([bounds, invert_stable_point(bounds)]).T
 
 
-def get_repeller_bounds_fast(alpha=4.1):
-    roots = np.roots([1, 0, 1, 2 * alpha, 1])
+def get_real_solutions(roots):
     real_roots = []
-
     for root in roots:
         if abs(root.real - root) < 1e-7:
             real_roots.append(root.real)
 
     return sorted(real_roots)
+
+
+def get_repeller_bounds_fast(alpha=4.1):
+    roots = np.roots([1, 0, 1, 2 * alpha, 1])
+    return get_real_solutions(roots)
+
+
+def get_stable_points_fast(alpha=4.1, gamma=0):
+    roots = np.roots([1, -gamma, 1, -gamma - alpha])
+    return get_real_solutions(roots)
 
 
 @njit()
