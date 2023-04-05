@@ -50,8 +50,9 @@ def show_portraits(gamma, *starts, steps_count=100, skip_count=0, filename=None)
     xs = np.linspace(x_min, x_max, 500)
     ys = model.f(xs, gamma=gamma)
 
-    for sequence in sequences:
-        print(sequence[-1])
+    # for sequence in sequences:
+    #     print(sequence[-1])
+    #     print(*sequence)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
 
@@ -74,6 +75,7 @@ def show_portraits(gamma, *starts, steps_count=100, skip_count=0, filename=None)
 def show_several_phase_portraits():
     show_portraits(1, 0, steps_count=40, filename='images/1d/single_attraction.png')
     show_portraits(-0.1, 0.15203560313851436, 1.35, steps_count=41, filename='images/1d/two_cycle.png')
+    show_portraits(-1.8, -0.028646655857585523, steps_count=40, filename='images/1d/three_cycle.png')
     return
     # show_portraits(-3.3, -3.1, -0.8, 0)
     show_portraits(-3, -3.1, -1.09, 0.4)
