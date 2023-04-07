@@ -76,11 +76,12 @@ def show_several_phase_portraits():
     show_portraits(1, 0, steps_count=40, filename='images/1d/single_attraction.png')
     show_portraits(-0.1, 0.15203560313851436, 1.35, steps_count=41, filename='images/1d/two_cycle.png')
     show_portraits(-1, 2.4228133045223896, steps_count=40, filename='images/1d/four_cycles.png')
+    show_portraits(-1.5, 0, skip_count=100, steps_count=100, filename='images/1d/chaos.png')
+    show_portraits(-1.7471, 0, skip_count=200, steps_count=200, filename='images/1d/chaotic_burst.png')
     show_portraits(-1.8, -0.028646655857585523, steps_count=40, filename='images/1d/three_cycle.png')
     show_portraits(-3.4875, 0.0025490249007873444, steps_count=40, filename='images/1d/five_cycle.png')
     show_portraits(-3.3, -3.1, -1.09, 0.5, filename='images/1d/chaos_and_stable.png')
     show_portraits(-3, -3.1, -1.09, 0.4, filename='images/1d/from_chaos_to_stable.png')
-    show_portraits(-1.7471, 0, skip_count=200, steps_count=200, filename='images/1d/chaotic_burst.png')
 
 
 def get_stable_points(x_min, x_max, count):
@@ -154,7 +155,7 @@ def show_1d_graphics():
     show_bifurcation(attractor, repeller, chaotic, attracted_points, upper_attracted_points)
     show_lyapunov_exponent(attractor, repeller, chaotic, upper_attracted_points)
 
-    # show_several_phase_portraits()
+    show_several_phase_portraits()
 
 
 def show_bifurcation_diagram_2d(gamma: float, sigmas):
