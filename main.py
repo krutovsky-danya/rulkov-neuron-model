@@ -93,7 +93,7 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
 
 
 def show_deterministic_2d_graphics(gamma, special_sigmas, edges):
-    sigmas = np.linspace(0.48, 0, 201)
+    sigmas = np.linspace(0.48, 0, 2001)
     show_bifurcation_diagram_2d(gamma, sigmas)
 
     config = model.AttractionPoolConfiguration(gamma, 0, edges, edges, 50, 500, 100)
@@ -228,55 +228,10 @@ def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, 
     plt.show()
 
 
-def do_something():
-    gammas_count = 501
-    xs_count = 501
-
-    gamma_1 = -4.16187
-    gamma_2 = -3.3
-    gammas = np.linspace(gamma_1 - 0.1, gamma_2 + 0.1, gammas_count)
-
-    x_1 = -1
-    x_2 = 1
-    xs = np.linspace(x_1, x_2, xs_count)
-    pool = np.zeros((gammas_count, xs_count))
-
-    for i, gamma in enumerate(gammas):
-        attractors = []
-        for j, x in enumerate(xs):
-            xss = model.get_x_sequence(gamma, x, 100, skip_count=1000)
-            xss = np.round(xss, 5)
-            frozen = frozenset(list(xss))
-
-            index = -1
-            if len(frozen) < 80:
-                if frozen in attractors:
-                    index = attractors.index(frozen)
-                else:
-                    index = len(attractors)
-                    attractors.append(frozen)
-
-            index = min(3, index)
-
-            pool[xs_count - j - 1, i] = index
-
-    bifurcation_gammas = gammas
-    bifurcation_xs = np.array([0])
-    attracted_points = model.get_points_distribution(bifurcation_gammas, bifurcation_xs, 1000, 100)
-
-    mask = attracted_points[1] > x_1
-    attracted_points = attracted_points[:, mask]
-
-    extent = [gamma_1 - 0.1, gamma_2 + 0.1, x_1, x_2]
-    plt.imshow(pool, extent=extent)
-    plt.plot(*attracted_points, '.r', markersize=0.01)
-    plt.show()
-
-
 @timeit
 def main():
     show_1d_graphics()
-    # show_2d_graphics()
+    show_2d_graphics()
     # show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5), p=0.95)
     #
     # show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2), p=0.95)
@@ -295,11 +250,5 @@ def main():
 
 
 if __name__ == '__main__':
-    try:
-        os.makedirs('images/1d')
-    except OSError as error:
-        print(error)
-
-    # do_something()
-
-    main()
+    show_2d_graphics()
+    # main()

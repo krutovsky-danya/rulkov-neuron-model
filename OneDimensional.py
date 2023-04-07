@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -74,9 +76,9 @@ def show_portraits(gamma, *starts, steps_count=100, skip_count=0, filename=None)
     xs = np.linspace(x_min, x_max, 500)
     ys = model.f(xs, gamma=gamma)
 
-    for sequence in sequences:
-        print(sequence[-1])
-        print(*sequence)
+    # for sequence in sequences:
+    #     print(sequence[-1])
+    #     print(*sequence)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
 
@@ -109,6 +111,11 @@ def show_several_phase_portraits():
 
 
 def show_1d_graphics():
+    try:
+        os.makedirs('images/1d')
+    except OSError as error:
+        print(error)
+
     x_min = -3.9
     x_max = 1.7
     x_0 = -0.12584
@@ -133,5 +140,51 @@ def show_1d_graphics():
     show_several_phase_portraits()
 
 
+def do_something():
+    gammas_count = 501
+    xs_count = 501
+
+    gamma_1 = -4.16187
+    gamma_2 = -3.3
+    gammas = np.linspace(gamma_1 - 0.1, gamma_2 + 0.1, gammas_count)
+
+    x_1 = -1
+    x_2 = 1
+    xs = np.linspace(x_1, x_2, xs_count)
+    pool = np.zeros((gammas_count, xs_count))
+
+    for i, gamma in enumerate(gammas):
+        attractors = []
+        for j, x in enumerate(xs):
+            xss = model.get_x_sequence(gamma, x, 100, skip_count=1000)
+            xss = np.round(xss, 5)
+            frozen = frozenset(list(xss))
+
+            index = -1
+            if len(frozen) < 80:
+                if frozen in attractors:
+                    index = attractors.index(frozen)
+                else:
+                    index = len(attractors)
+                    attractors.append(frozen)
+
+            index = min(3, index)
+
+            pool[xs_count - j - 1, i] = index
+
+    bifurcation_gammas = gammas
+    bifurcation_xs = np.array([0])
+    attracted_points = model.get_points_distribution(bifurcation_gammas, bifurcation_xs, 1000, 100)
+
+    mask = attracted_points[1] > x_1
+    attracted_points = attracted_points[:, mask]
+
+    extent = [gamma_1 - 0.1, gamma_2 + 0.1, x_1, x_2]
+    plt.imshow(pool, extent=extent)
+    plt.plot(*attracted_points, '.r', markersize=0.01)
+    plt.show()
+
+
 if __name__ == '__main__':
     show_1d_graphics()
+    do_something()
