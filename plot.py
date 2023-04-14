@@ -106,22 +106,16 @@ def plot_phase_portraits(fig: plt.Figure, ax1: plt.Axes, ax2: plt.Axes, gamma, g
     fig.suptitle(f"$\\gamma={gamma}$")
 
 
-def show_phase_portraits(gamma, graphic, sequences, leaders):
-    fig, (ax1, ax2) = plt.subplots(1, 2)
+def plot_bifurcation_diagram_2d(fig: plt.Figure, axis: plt.Axes, gamma, points_sets):
+    fig.set_size_inches(14, 7)
+    for point_set in points_sets:
+        axis.plot(*point_set, '.', markersize=0.1)
 
-    plot_phase_portraits(fig, ax1, ax2, gamma, graphic, sequences, leaders)
+    axis.set_title(f'$\\gamma={gamma:.4f}$', size=14)
+    axis.set_xlabel('$\\sigma$', size=14)
+    axis.set_ylabel('$x$', size=14, rotation=0)
 
-    plt.show()
-
-
-def show_bifurcation_diagram_2d(gamma: float, points_sets):
-    plt.figure(figsize=(14, 7))
-    for points_set in points_sets:
-        plt.plot(*points_set, '.', markersize=0.1)
-    plt.title(f"$\\gamma={gamma:.4f}$", size=20)
-    plt.xlabel('$\\sigma$', size=20)
-    plt.ylabel('$x$', size=20, rotation=0)
-    plt.show()
+    return fig, axis
 
 
 def plot_attraction_pool(figure: plt.Figure, axis: plt.Axes, pools, extent):

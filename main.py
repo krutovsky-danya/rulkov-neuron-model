@@ -26,22 +26,28 @@ def timeit(func):
     return timeit_wrapper
 
 
-def show_bifurcation_diagram_2d(gamma: float, sigmas):
+def show_bifurcation_diagram_2d(gamma: float, sigmas, filename=None):
     num = 7
     edges = (-5, 5)
-    config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num, 500, 100)
+    config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num)
     _, attractors = model.get_attraction_pool(config)
     points_sets = []
 
-    for restarting in [True, False]:
-        for attractor in attractors:
-            origin = np.array(list(attractor)[0])
-            points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, restart=restarting)
-            points_set = model.get_parametrized_points(sigmas, points_restarting)
+    for attractor in attractors:
+        origin = np.array(list(attractor)[0])
+        points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, steps_count=150)
+        points_set = model.get_parametrized_points(sigmas, points_restarting)
 
-            points_sets.append(points_set)
+        points_sets.append(points_set)
 
-    plot.show_bifurcation_diagram_2d(gamma, points_sets)
+    fig, axis = plt.subplots()
+
+    plot.plot_bifurcation_diagram_2d(fig, axis, gamma, points_sets)
+
+    if filename is not None:
+        plt.savefig(filename)
+
+    plt.show()
 
 
 def separate_points(last_points, cpi, steps_count):
@@ -104,9 +110,8 @@ def show_deterministic_2d_graphics(gamma, special_sigmas, edges):
 
 
 def show_2d_graphics():
+    # show_deterministic_2d_graphics(0.7, [0.04, 0.2], (-3, 8))
     show_deterministic_2d_graphics(-0.7, [0.05, 0.1, 0.3, 0.45], (-5, 5))
-
-    show_deterministic_2d_graphics(0.7, [0.04, 0.2], (-3, 8))
 
 
 def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5)):
@@ -230,8 +235,13 @@ def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, 
 
 @timeit
 def main():
-    show_1d_graphics()
-    show_2d_graphics()
+    gamma = 0.7
+    sigmas_for_bifurcation = np.linspace(0.48, 0, 2001)
+    # show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation, f"images/2d/bif_2d_gamma_is_{gamma}.png")
+    show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation)
+
+    # show_1d_graphics()
+    # show_2d_graphics()
     # show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5), p=0.95)
     #
     # show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2), p=0.95)
@@ -250,5 +260,8 @@ def main():
 
 
 if __name__ == '__main__':
-    show_2d_graphics()
-    # main()
+    try:
+        os.makedirs('images/2d')
+    except OSError as error:
+        print(error)
+    main()
