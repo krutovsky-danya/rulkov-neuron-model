@@ -28,6 +28,10 @@ class AttractionPoolConfiguration:
         self.take = take
         self.skip = skip
 
+    def get_extent(self):
+        extent = [self.x_min, self.x_max, self.y_min, self.y_max]
+        return extent
+
 
 @njit()
 def f(x, alpha: float = 4.1, gamma: float = -3):
@@ -240,6 +244,7 @@ def get_attractor_index(points, attractors: list, max_points):
 
 def get_attraction_pool(config: AttractionPoolConfiguration):
     size = config.density
+    # dx, dy = np.random.uniform(-1, 1, 2) / size ** 2
     x_set = np.linspace(config.x_min, config.x_max, config.density)
     y_set = np.linspace(config.y_min, config.y_max, config.density)
     cycles_map = np.zeros((size, size))

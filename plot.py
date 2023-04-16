@@ -118,11 +118,17 @@ def plot_bifurcation_diagram_2d(fig: plt.Figure, axis: plt.Axes, gamma, points_s
     return fig, axis
 
 
-def plot_attraction_pool(figure: plt.Figure, axis: plt.Axes, pools, extent):
-    axis.set_xlabel('$x$', size=20)
-    axis.set_ylabel('$y$', size=20, rotation=0)
+def configure_attraction_pool_figure(fig: plt.Figure, gamma, sigma):
+    fig.set_size_inches(14, 7)
+    fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f}$", size=14)
+    return fig
 
-    axis.imshow(pools.T[::-1], extent=extent)
+
+def plot_attraction_pool(figure: plt.Figure, axis: plt.Axes, pools, extent):
+    axis.set_xlabel('$x$', size=14)
+    axis.set_ylabel('$y$', size=14, rotation=0)
+
+    axis.imshow(pools.T[::-1], extent=extent, cmap='Greens')
 
     axis.set_xlim(extent[:2])
     axis.set_ylim(extent[2:])
@@ -135,3 +141,8 @@ def plot_attractors(figure: plt.Figure, axis: plt.Axes, attractors):
         axis.plot(*attractor, '.')
 
     return figure, axis
+
+
+def plot_attraction_pool_with_attractors(fig: plt.Figure, axis: plt.Axes, heatmap, extent, attractors):
+    plot_attraction_pool(fig, axis, heatmap, extent)
+    plot_attractors(fig, axis, attractors)

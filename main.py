@@ -11,6 +11,7 @@ import model
 import plot
 
 from OneDimensional import show_1d_graphics
+from TwoDimensionalDeterministic import show_2d_deterministic_graphics, show_attraction_pool
 
 
 def timeit(func):
@@ -24,94 +25,6 @@ def timeit(func):
         return result
 
     return timeit_wrapper
-
-
-def show_bifurcation_diagram_2d(gamma: float, sigmas, filename=None):
-    num = 7
-    edges = (-5, 5)
-    config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num)
-    _, attractors = model.get_attraction_pool(config)
-    points_sets = []
-
-    for attractor in attractors:
-        origin = np.array(list(attractor)[0])
-        points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, steps_count=150)
-        points_set = model.get_parametrized_points(sigmas, points_restarting)
-
-        points_sets.append(points_set)
-
-    fig, axis = plt.subplots()
-
-    plot.plot_bifurcation_diagram_2d(fig, axis, gamma, points_sets)
-
-    if filename is not None:
-        plt.savefig(filename)
-
-    plt.show()
-
-
-def separate_points(last_points, cpi, steps_count):
-    lined = np.reshape(last_points, (cpi * cpi * steps_count, 2))
-    rounded = np.around(lined, 5)
-    points = np.unique(rounded, axis=0)
-
-    final_points = points.T
-
-    co_mask = final_points[0] == final_points[1]
-
-    return final_points[:, co_mask], final_points[:, ~co_mask]
-
-
-def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=None, show=True):
-    gamma = config.gamma
-    sigma = config.sigma
-
-    heatmap, attractors = model.get_attraction_pool(config)
-
-    extent = [config.x_min, config.x_max, config.y_min, config.y_max]
-
-    for i in range(len(attractors)):
-        listed = list(attractors[i])
-        attractors[i] = np.array(listed).T
-
-    traces = []
-    for attractor in attractors:
-        origin = np.array(attractor[:, 0])
-        trace = model.get_points(origin, gamma, sigma, 200)
-        traces.append(trace)
-
-    fig, (ax1, ax2) = plt.subplots(1, 2)
-
-    fig: plt.Figure = fig
-
-    fig.set_size_inches(14, 7)
-    fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f}$", size=20)
-
-    plot.plot_attraction_pool(fig, ax1, heatmap, extent)
-    plot.plot_attractors(fig, ax1, attractors)
-
-    plot.plot_attraction_pool(fig, ax2, heatmap, extent)
-    plot.plot_attractors(fig, ax2, attractors)
-    for trace in traces:
-        ax2.plot(*trace, '-')
-
-    plt.show()
-
-
-def show_deterministic_2d_graphics(gamma, special_sigmas, edges):
-    sigmas = np.linspace(0.48, 0, 2001)
-    show_bifurcation_diagram_2d(gamma, sigmas)
-
-    config = model.AttractionPoolConfiguration(gamma, 0, edges, edges, 50, 500, 100)
-
-    for sigma in special_sigmas:
-        config.sigma = sigma
-        show_attraction_pool(config)
-
-
-def show_2d_graphics():
-    # show_deterministic_2d_graphics(0.7, [0.04, 0.2], (-3, 8))
-    show_deterministic_2d_graphics(-0.7, [0.05, 0.1, 0.3, 0.45], (-5, 5))
 
 
 def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5)):
@@ -149,7 +62,7 @@ def build_attraction_pool_movie(show=True):
     for i, g in enumerate(np.linspace(-1, -1.2, 201)):
         config = model.AttractionPoolConfiguration(g, s, (-2, 6), (-2, 6), 300)
         filename = f'images/image_{i}.png'
-        show_attraction_pool(config, filename=filename, show=show)
+        show_attraction_pool(config, filename=filename)
         filenames.append(filename)
 
     animation.build_video("animations/from_gamma.mov", filenames)
@@ -167,7 +80,7 @@ def make_cool_zooming_movie():
     for i, (b1, b2) in enumerate(zip(b1s, b2s)):
         config = model.AttractionPoolConfiguration(g, s, (b1, b2), (b1, b2), 300)
         filename = f'images/image_zoom_{i}.png'
-        show_attraction_pool(config, filename=filename, show=True)
+        show_attraction_pool(config, filename=filename)
         filenames.append(filename)
 
     animation.build_video("animations/zooming.mov", filenames)
@@ -175,13 +88,13 @@ def make_cool_zooming_movie():
 
 def make_cool_pools():
     config = model.AttractionPoolConfiguration(-1.1211, 0.1, (-10, 10), (-10, 10), 200)
-    show_attraction_pool(config, filename='big_special.png', show=True)
+    show_attraction_pool(config, filename='big_special.png')
 
     config.x_min, config.x_max, config.y_min, config.y_max = -1, -0.99, -1, -0.99
-    show_attraction_pool(config, filename='super_small_special.png', show=True)
+    show_attraction_pool(config, filename='super_small_special.png')
 
     config.x_min, config.x_max, config.y_min, config.y_max = -100, -1, -100, -1
-    show_attraction_pool(config, filename='very_big_special.png', show=True)
+    show_attraction_pool(config, filename='very_big_special.png')
 
 
 def make_circle_pool():
@@ -212,7 +125,7 @@ def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, 
     fig, (ax1, ax2) = plt.subplots(1, 2)
 
     fig.set_size_inches(14, 7)
-    fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f};$\n$\\epsilon={epsilon:.3f}; p={p:.3f}$", size=15)
+    fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f};$\n$\\epsilon={epsilon:.3f}; p={p:.3f}$", size=14)
 
     plot.plot_attraction_pool(fig, ax1, heatmap, extent)
 
@@ -235,13 +148,9 @@ def show_confidence_ellipses_on_attraction_pools(gamma, sigma, epsilon, border, 
 
 @timeit
 def main():
-    gamma = 0.7
-    sigmas_for_bifurcation = np.linspace(0.48, 0, 2001)
-    # show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation, f"images/2d/bif_2d_gamma_is_{gamma}.png")
-    show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation)
-
-    # show_1d_graphics()
-    # show_2d_graphics()
+    if __name__ != '__main__':
+        show_1d_graphics()
+        show_2d_deterministic_graphics()
     # show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5), p=0.95)
     #
     # show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2), p=0.95)
@@ -260,8 +169,4 @@ def main():
 
 
 if __name__ == '__main__':
-    try:
-        os.makedirs('images/2d')
-    except OSError as error:
-        print(error)
     main()
