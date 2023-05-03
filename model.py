@@ -17,7 +17,6 @@ spec = [
 ]
 
 
-# @jitclass(spec)
 class AttractionPoolConfiguration:
     def __init__(self, gamma: float, sigma, xs=(-1, 1), ys=(-1, 1), density=100, skip=2000, take=16):
         self.gamma: float = gamma
@@ -31,6 +30,15 @@ class AttractionPoolConfiguration:
     def get_extent(self):
         extent = [self.x_min, self.x_max, self.y_min, self.y_max]
         return extent
+
+
+class StochasticAttractionPoolConfiguration(AttractionPoolConfiguration):
+    def __init__(self, config: AttractionPoolConfiguration, epsilon, p):
+        xs = config.x_min, config.x_max
+        ys = config.y_min, config.y_max
+        super().__init__(config.gamma, config.sigma, xs, ys, config.density, config.skip, config.take)
+        self.epsilon = epsilon
+        self.p = p
 
 
 @njit()
@@ -242,11 +250,11 @@ def get_attractor_index(points, attractors: list, max_points):
     return len(attractors)
 
 
-def get_attraction_pool(config: AttractionPoolConfiguration):
+def get_attraction_pool(config: AttractionPoolConfiguration, dx=0, dy=0):
     size = config.density
     # dx, dy = np.random.uniform(-1, 1, 2) / size ** 2
-    x_set = np.linspace(config.x_min, config.x_max, config.density)
-    y_set = np.linspace(config.y_min, config.y_max, config.density)
+    x_set = np.linspace(config.x_min, config.x_max, config.density) + dx
+    y_set = np.linspace(config.y_min, config.y_max, config.density) + dy
     cycles_map = np.zeros((size, size))
 
     attractors = [[]]
