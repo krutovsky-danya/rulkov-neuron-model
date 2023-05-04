@@ -39,6 +39,7 @@ class StochasticAttractionPoolConfiguration(AttractionPoolConfiguration):
         super().__init__(config.gamma, config.sigma, xs, ys, config.density, config.skip, config.take)
         self.epsilon = epsilon
         self.p = p
+        self.shift = np.random.uniform(-1, 1, 2) / (config.density ** 2)
 
 
 @njit()
