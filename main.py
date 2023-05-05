@@ -109,19 +109,23 @@ def make_circle_pool():
 
 
 def show_confidence_ellipses_on_attraction_pools(conf: model.StochasticAttractionPoolConfiguration, filename):
-    gamma = conf.gamma
-    sigma = conf.sigma
-    epsilon = conf.epsilon
-    p = conf.p
-    extent = conf.get_extent()
     shift = conf.shift
     heatmap, attractors = model.get_attraction_pool(conf, *shift)
 
+    show_ellipses_on_made_pool(heatmap, attractors, conf, filename)
+
+
+def show_ellipses_on_made_pool(heatmap, attractors, config, filename):
+    gamma = config.gamma
+    sigma = config.sigma
+    epsilon = config.epsilon
+    p = config.p
+    extent = config.get_extent()
     ellipses_sets = model.get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p)
 
     stochastic_traces = []
     for attractor in attractors:
-        stochastic_gammas = gamma + epsilon * np.random.normal(0, 1, (100, 2))
+        stochastic_gammas = gamma + epsilon * np.random.normal(0, 1, (config.stochastic_count, 2))
         origin = np.array(list(attractor)[0])
         stochastic_trace = model.get_stochastic_coupling_trace(origin, stochastic_gammas, sigma)
         stochastic_traces.append(stochastic_trace)
@@ -162,27 +166,50 @@ def show_2d_stochastic_graphics():
     density = 50
     config = model.AttractionPoolConfiguration(gamma, sigma, border, border, density)
     stochastic_config = model.StochasticAttractionPoolConfiguration(config, epsilon, p)
-    show_confidence_ellipses_on_attraction_pools(stochastic_config,
-                                                 filename='images/stochastic/single_point_small_sigma.png')
+    # show_confidence_ellipses_on_attraction_pools(stochastic_config, filename='images/stochastic/single_point_small_sigma.png')
     stochastic_config.sigma = 0.03
-    show_confidence_ellipses_on_attraction_pools(stochastic_config,
-                                                 filename='images/stochastic/single_point_bigger_sigma.png')
+    # show_confidence_ellipses_on_attraction_pools(stochastic_config, filename='images/stochastic/single_point_bigger_sigma.png')
 
     sigma = 0.2
-    border = (-3, 8)
+    border = (-2, 7)
     epsilon = 0.1
     density = 50  # * 10
     config = model.AttractionPoolConfiguration(gamma, sigma, border, border, density)
     stochastic_config = model.StochasticAttractionPoolConfiguration(config, epsilon, p)
     stochastic_config.shift = np.zeros(2)
-    show_confidence_ellipses_on_attraction_pools(stochastic_config,
-                                                 filename='images/stochastic/two_cycle.png')
+    # show_confidence_ellipses_on_attraction_pools(stochastic_config, filename='images/stochastic/two_cycle.png')
 
     density = 50
     config = model.AttractionPoolConfiguration(gamma, sigma, (-2, 2), (4, 8), density)
     stochastic_config = model.StochasticAttractionPoolConfiguration(config, epsilon, p)
-    show_confidence_ellipses_on_attraction_pools(stochastic_config,
-                                                 filename='images/stochastic/two_cycle_zoomed.png')
+    # show_confidence_ellipses_on_attraction_pools(stochastic_config, filename='images/stochastic/two_cycle_zoomed.png')
+
+    gamma = -0.7
+    sigma = 0.05
+    border = (-5, 5)
+    density = 500
+    config = model.AttractionPoolConfiguration(gamma, sigma, border, border, density)
+    stochastic_config = model.StochasticAttractionPoolConfiguration(config, epsilon, p, stochastic_count=500)
+    # shift = stochastic_config.shift
+    # heatmap, attractors = model.get_attraction_pool(stochastic_config, *shift)
+    # for i, epsilon in enumerate([0.1, 0.17, 0.24] * 5):
+    #     stochastic_config.epsilon = epsilon
+    #     show_ellipses_on_made_pool(heatmap, attractors, stochastic_config, f'images/stochastic/two_cycles_co_exists_{i}.png')
+
+    # stochastic_config.sigma = 0.3
+    # stochastic_config.epsilon = 0.03
+    # show_confidence_ellipses_on_attraction_pools(stochastic_config,
+    #                                              filename='images/stochastic/five_cycle_with_ellipses.png')
+
+    stochastic_config.sigma = 0.45
+    stochastic_config.epsilon = 0.01
+    shift = stochastic_config.shift
+    heatmap, attractors = model.get_attraction_pool(stochastic_config, *shift)
+    for i, epsilon in enumerate(np.linspace(0.1, 0.12, 11)):
+        stochastic_config.epsilon = epsilon
+        show_ellipses_on_made_pool(heatmap, attractors, stochastic_config, f'images/stochastic/series/a_{i}.png')
+    # show_confidence_ellipses_on_attraction_pools(stochastic_config,
+    #                                              filename='images/stochastic/two_and_four_cycles.png')
 
 
 @timeit
@@ -192,18 +219,6 @@ def main():
         show_2d_deterministic_graphics()
 
     show_2d_stochastic_graphics()
-    # show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5), p=0.95)
-    #
-    # show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.04, epsilon=0.01, border=(1.5, 2), p=0.95)
-    #
-    # show_confidence_ellipses_on_attraction_pools(0.7, 0.2, 0.1, (-3, 8), 0.95)
-    #
-    # show_confidence_ellipses_on_attraction_pools(-0.7, 0.3, 0.1, (-4, 6), 0.95)
-    #
-    # show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=0.05, epsilon=0.01, border=(1.5, 2), p=0.95)
-
-    # for epsilon in np.linspace(0.1, 0.25, 31):
-    #     show_confidence_ellipses_on_attraction_pools(gamma=-0.7, sigma=0.05, epsilon=epsilon, border=(-5, 5), p=0.95)
 
     # for sigma in np.linspace(0, .49, 50):
     #     show_confidence_ellipses_on_attraction_pools(gamma=0.7, sigma=sigma, epsilon=0.1, border=(-6, 8), p=0.99)

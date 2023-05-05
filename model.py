@@ -33,13 +33,14 @@ class AttractionPoolConfiguration:
 
 
 class StochasticAttractionPoolConfiguration(AttractionPoolConfiguration):
-    def __init__(self, config: AttractionPoolConfiguration, epsilon, p):
+    def __init__(self, config: AttractionPoolConfiguration, epsilon, p, stochastic_count=100):
         xs = config.x_min, config.x_max
         ys = config.y_min, config.y_max
         super().__init__(config.gamma, config.sigma, xs, ys, config.density, config.skip, config.take)
         self.epsilon = epsilon
         self.p = p
         self.shift = np.random.uniform(-1, 1, 2) / (config.density ** 2)
+        self.stochastic_count = stochastic_count
 
 
 @njit()
@@ -349,8 +350,8 @@ def get_confidence_ellipses_for_k_cycle(sigma, epsilon, p, k_cycle):
     for x in k_cycle:
         x1, x2 = x
         function_derivative_by_point = np.array([
-            [f_(x1), sigma],
-            [sigma, f_(x2)]
+            [f_(x1) - sigma, sigma],
+            [sigma, f_(x2) - sigma]
         ])
         fs.append(function_derivative_by_point)
 
