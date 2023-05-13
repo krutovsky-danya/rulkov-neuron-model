@@ -119,6 +119,11 @@ def show_bistable_neuron_coupling():
     show_attraction_pool(config, filename=f"images/2d/two_and_four_cycle.png")
 
 
+def show_fractal():
+    config = model.AttractionPoolConfiguration(-1.1211, 0.1, (-2, 6), (-2, 6), 500)
+    show_attraction_pool(config, filename=f"images/2d/fractal.png")
+
+
 def show_2d_deterministic_graphics():
     try:
         os.makedirs('images/2d')
@@ -126,6 +131,7 @@ def show_2d_deterministic_graphics():
         print(error)
     show_monostable_neuron_coupling()
     show_bistable_neuron_coupling()
+    show_fractal()
 
 
 if __name__ == '__main__':
