@@ -126,7 +126,7 @@ def show_fractal():
 
 def show_2d_deterministic_graphics():
     try:
-        os.makedirs('images/2d')
+        os.makedirs('images/2d', exist_ok=True)
     except OSError as error:
         print(error)
     show_monostable_neuron_coupling()

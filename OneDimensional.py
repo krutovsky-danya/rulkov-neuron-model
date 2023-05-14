@@ -112,7 +112,7 @@ def show_several_phase_portraits():
 
 def show_1d_graphics():
     try:
-        os.makedirs('images/1d')
+        os.makedirs('images/1d', exist_ok=True)
     except OSError as error:
         print(error)
 
