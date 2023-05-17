@@ -7,7 +7,7 @@ import model
 import plot
 
 
-def show_bifurcation_diagram_2d(gamma: float, sigmas, filename=None):
+def show_bifurcation_diagram_2d(gamma: float, sigmas, filename=None, show=True):
     num = 7
     edges = (-5, 5)
     config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num)
@@ -28,7 +28,10 @@ def show_bifurcation_diagram_2d(gamma: float, sigmas, filename=None):
     if filename is not None:
         plt.savefig(filename)
 
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
 
 def get_attraction_pool_data(config: model.AttractionPoolConfiguration):
@@ -45,7 +48,7 @@ def get_attraction_pool_data(config: model.AttractionPoolConfiguration):
     return heatmap, attractors, traces
 
 
-def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=None):
+def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=None, show=True):
     extent = config.get_extent()
 
     heatmap, attractors, traces = get_attraction_pool_data(config)
@@ -62,7 +65,10 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
     if filename is not None:
         plt.savefig(filename)
 
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
 
 def show_only_pool(config, filename):
