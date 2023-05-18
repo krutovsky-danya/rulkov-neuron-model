@@ -34,6 +34,35 @@ def show_bifurcation_diagram_2d(gamma: float, sigmas, filename=None, show=True):
         plt.close()
 
 
+def show_lyapunov_exponents_2d(gamma: float, sigmas, filename=None, show=True):
+    num = 7
+    edges = (-5, 5)
+    config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num)
+    _, attractors = model.get_attraction_pool(config)
+    lyapunov_exponents_array = []
+
+    for attractor in attractors:
+        origin = np.array(list(attractor)[0])
+        points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, steps_count=1)
+
+        lyapunov_origins = points_restarting[:, :, 0]
+        lyapunov_exponents = model.get_lyapunov_exponents_2d(config.gamma, lyapunov_origins, sigmas)
+        lyapunov_exponents = lyapunov_exponents.T
+        lyapunov_exponents_array.append(lyapunov_exponents)
+
+    fig, axis = plt.subplots()
+
+    plot.plot_lyapunov_exponents_2d(fig, axis, gamma, lyapunov_exponents_array)
+
+    if filename is not None:
+        plt.savefig(filename)
+
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
+
 def get_attraction_pool_data(config: model.AttractionPoolConfiguration):
     heatmap, attractors = model.get_attraction_pool(config)
 
@@ -97,6 +126,7 @@ def show_monostable_neuron_coupling():
     gamma = 0.7
     sigmas_for_bifurcation = np.linspace(0.48, 0, 2001)
     show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation, f"images/2d/bif_2d_gamma_is_{gamma}.png")
+    show_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, f'images/2d/lyapunov_gamma_is_{gamma}.png')
 
     edges = (-3, 8)
     config = model.AttractionPoolConfiguration(gamma, 0.03, edges, edges, 50)
@@ -110,6 +140,7 @@ def show_bistable_neuron_coupling():
     gamma = -0.7
     sigmas_for_bifurcation = np.linspace(0.48, 0, 2001)
     show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation, f"images/2d/bifurcation_with_two_cycled.png")
+    show_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, f'images/2d/lyapunov_gamma_is_{gamma}.png')
 
     edges = (-5, 5)
     config = model.AttractionPoolConfiguration(gamma, 0.05, edges, edges, 500)

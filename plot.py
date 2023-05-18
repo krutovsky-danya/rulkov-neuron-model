@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from typing import Optional
 
 import numpy as np
 
@@ -146,3 +145,15 @@ def plot_attractors(figure: plt.Figure, axis: plt.Axes, attractors):
 def plot_attraction_pool_with_attractors(fig: plt.Figure, axis: plt.Axes, heatmap, extent, attractors):
     plot_attraction_pool(fig, axis, heatmap, extent)
     plot_attractors(fig, axis, attractors)
+
+
+def plot_lyapunov_exponents_2d(fig: plt.Figure, axis: plt.Axes, gamma, lyapunov_exponents_array):
+    fig.set_size_inches(14, 7)
+    axis.set_title(f'$\\gamma={gamma:.4f}$', size=14)
+    axis.set_xlabel('$\\Lambda$', size=14)
+    axis.set_ylabel('$x$', size=14, rotation=0)
+
+    for lyapunov_exponents in lyapunov_exponents_array:
+        axis.plot(*lyapunov_exponents)
+
+    return fig, axis
