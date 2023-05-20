@@ -327,8 +327,7 @@ def get_confidence_ellipse_for_point(point, m, epsilon, p):
     circle = np.array([np.cos(t), np.sin(t)])
     (v11, v12), (v21, v22) = v.T
     z1, z2 = (z * circle.T).T
-    # ellipse = point + np.array([z1 * v22 - z2 * v12, z2 * v11 - z1 * v21]).T
-    ellipse = point + np.array([z2 * v11 - z1 * v21, z1 * v22 - z2 * v12]).T
+    ellipse = point + np.array([z1 * v22 - z2 * v12, z2 * v11 - z1 * v21]).T
     return ellipse
 
 

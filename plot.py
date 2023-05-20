@@ -17,10 +17,10 @@ def show_stable_points(xs, gammas, bounds: np.ndarray, filename="images/1d/stabl
     for i, bound in enumerate(bounds):
         x, gamma = bound
         ax1.plot([x, x], [gamma, y_min], '--k')
-        ax1.annotate(f'$x_{i}$', (x, y_min), xytext=(x + 0.05, y_min + 0.1), size=14)
+        ax1.annotate(f'$x_{i}$', (x, y_min), xytext=(x + 0.05, y_min + 0.1), size=20)
 
         ax1.plot([x, x_min], [gamma, gamma], '--k')
-        ax1.annotate(f'$\\gamma_{i}$', (x_min + 0.05, gamma + 0.1), size=14)
+        ax1.annotate(f'$\\gamma_{i}$', (x_min + 0.05, gamma + 0.1), size=20)
 
     ax1.set_xlim(*x_lim)
     ax1.set_ylim(*y_lim)
@@ -56,16 +56,13 @@ def show_repeller_position(xs, ys, bounds):
     plt.show()
 
 
-def plot_bifurcation_diagram(fig: plt.Figure, axis: plt.Axes, points_attraction, stable_points_set):
+def plot_bifurcation_diagram(fig: plt.Figure, axis: plt.Axes, points_attraction):
     fig.set_size_inches((14, 7))
 
-    axis.set_xlabel('$\\gamma$', size=15)
-    axis.set_ylabel('$x$', size=15, rotation=0)
+    axis.set_xlabel('$\\gamma$', size=20)
+    axis.set_ylabel('$x$', size=20, rotation=0)
 
     axis.plot(*points_attraction, '.', markersize=0.01)
-
-    for stable_points in stable_points_set:
-        axis.plot(*stable_points, '--')
 
     axis.set_ylim(-4, 4)
 
@@ -75,8 +72,8 @@ def plot_bifurcation_diagram(fig: plt.Figure, axis: plt.Axes, points_attraction,
 def plot_lyapunov_exponent(fig: plt.Figure, axis: plt.axis, gammas_bound, *exponents):
     fig.set_size_inches((14, 7))
 
-    axis.set_xlabel('$\\gamma$', size=14)
-    axis.set_ylabel('$\\lambda$', size=14, rotation=0)
+    axis.set_xlabel('$\\gamma$', size=20)
+    axis.set_ylabel('$\\lambda$', size=20, rotation=0)
 
     axis.plot(gammas_bound, [0, 0], 'k')
 
@@ -96,11 +93,11 @@ def plot_phase_portraits(fig: plt.Figure, ax1: plt.Axes, ax2: plt.Axes, gamma, g
     xs, ys = graphic
     ax1.plot(*graphic)
     ax1.plot(xs, xs)
-    ax1.set_xlabel("$x_t$", size=14)
-    ax1.set_ylabel("$x_{t+1}$", size=14, rotation=0)
+    ax1.set_xlabel("$x_t$", size=20)
+    ax1.set_ylabel("$x_{t+1}$", size=20, rotation=0)
 
-    ax2.set_xlabel("$t$", size=14)
-    ax2.set_ylabel("$x_t$", size=14, rotation=0)
+    ax2.set_xlabel("$t$", size=20)
+    ax2.set_ylabel("$x_t$", size=20, rotation=0)
 
     fig.suptitle(f"$\\gamma={gamma}$")
 
@@ -110,22 +107,22 @@ def plot_bifurcation_diagram_2d(fig: plt.Figure, axis: plt.Axes, gamma, points_s
     for point_set in points_sets:
         axis.plot(*point_set, '.', markersize=0.1)
 
-    axis.set_title(f'$\\gamma={gamma:.4f}$', size=14)
-    axis.set_xlabel('$\\sigma$', size=14)
-    axis.set_ylabel('$x$', size=14, rotation=0)
+    axis.set_title(f'$\\gamma={gamma:.4f}$', size=20)
+    axis.set_xlabel('$\\sigma$', size=20)
+    axis.set_ylabel('$x$', size=20, rotation=0)
 
     return fig, axis
 
 
 def configure_attraction_pool_figure(fig: plt.Figure, gamma, sigma):
     fig.set_size_inches(14, 7)
-    fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f}$", size=14)
+    fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.5f}$", size=14)
     return fig
 
 
 def plot_attraction_pool(figure: plt.Figure, axis: plt.Axes, pools, extent):
-    axis.set_xlabel('$x$', size=14)
-    axis.set_ylabel('$y$', size=14, rotation=0)
+    axis.set_xlabel('$x$', size=20)
+    axis.set_ylabel('$y$', size=20, rotation=0)
 
     axis.imshow(pools.T[::-1], extent=extent, cmap='Greens')
 
@@ -149,9 +146,9 @@ def plot_attraction_pool_with_attractors(fig: plt.Figure, axis: plt.Axes, heatma
 
 def plot_lyapunov_exponents_2d(fig: plt.Figure, axis: plt.Axes, gamma, lyapunov_exponents_array):
     fig.set_size_inches(14, 7)
-    axis.set_title(f'$\\gamma={gamma:.4f}$', size=14)
-    axis.set_xlabel('$\\Lambda$', size=14)
-    axis.set_ylabel('$x$', size=14, rotation=0)
+    axis.set_title(f'$\\gamma={gamma:.4f}$', size=20)
+    axis.set_xlabel('$\\Lambda$', size=20)
+    axis.set_ylabel('$x$', size=20, rotation=0)
 
     for lyapunov_exponents in lyapunov_exponents_array:
         axis.plot(*lyapunov_exponents)
