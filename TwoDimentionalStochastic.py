@@ -34,6 +34,7 @@ def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5,
 
     plt.show()
 
+
 def show_confidence_ellipses_on_attraction_pools(conf: model.StochasticAttractionPoolConfiguration, filename):
     shift = conf.shift
     heatmap, attractors = model.get_attraction_pool(conf, *shift)
@@ -97,9 +98,6 @@ def show_2d_stochastic_graphics():
     stochastic_config.sigma = 0.03
     show_confidence_ellipses_on_attraction_pools(stochastic_config,
                                                  filename='images/stochastic/single_point_bigger_sigma.png')
-
-    if __name__ != '__main__':
-        return
 
     sigma = 0.2
     border = (-2, 7)
