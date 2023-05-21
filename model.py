@@ -402,13 +402,12 @@ def get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p)
             yield ellipses
 
 
-@njit
-def get_lyapunov_exponent_2d(gamma: float, sigma: float, origin: np.ndarray, delta=1e-7, steps_count=1000):
+def get_lyapunov_exponent_2d(gamma: float, sigma: float, origin: np.ndarray, delta=1e-8, steps_count=1000):
     ps = np.zeros(steps_count)
-    r = 2 ** -0.5 * np.array([delta, delta])
+    r = (2 ** -0.5) * np.array([delta, delta])
 
-    x = origin
-    xs = get_points(x, gamma=gamma, sigma=sigma, steps_count=steps_count, skip_count=1).T
+    x = np.round(origin, 9)
+    xs = get_points(x, gamma, sigma, steps_count=steps_count, skip_count=1).T
 
     xv = x + r
 
@@ -428,8 +427,7 @@ def get_lyapunov_exponent_2d(gamma: float, sigma: float, origin: np.ndarray, del
     return lyapunov_exponent
 
 
-@njit
-def get_lyapunov_exponents_2d(gamma: float, origins: np.ndarray, sigmas: np.ndarray, delta=1e-7, steps_count=1000):
+def get_lyapunov_exponents_2d(gamma: float, origins: np.ndarray, sigmas: np.ndarray, delta=1e-9, steps_count=1000):
     lyapunov_exponents = np.zeros(len(sigmas))
 
     for i, (sigma, origin) in enumerate(zip(sigmas, origins)):
