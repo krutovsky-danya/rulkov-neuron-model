@@ -89,7 +89,7 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
     plot.plot_attraction_pool_with_attractors(fig, ax2, heatmap, extent, attractors)
 
     for trace in traces:
-        ax2.plot(*trace, '-')
+        ax2.plot(*trace)
 
     if filename is not None:
         plt.savefig(filename)
@@ -100,26 +100,25 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
         plt.close()
 
 
-def show_only_pool(config, filename):
+def show_only_pool(config, filename, show=True):
     extent = config.get_extent()
 
-    heatmap, attractors = model.get_attraction_pool(config)
-
-    for i in range(len(attractors)):
-        listed = list(attractors[i])
-        attractors[i] = np.array(listed).T
+    heatmap, attractors, traces = get_attraction_pool_data(config)
 
     fig, axis = plt.subplots()
 
     plot.configure_attraction_pool_figure(fig, config.gamma, config.sigma)
     plot.plot_attraction_pool(fig, axis, heatmap, extent)
-    for attractor in attractors:
-        axis.plot(*attractor, '.', markersize=10)
+    for trace in traces:
+        axis.plot(*trace, '.', markersize=10)
 
     if filename is not None:
         plt.savefig(filename)
 
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
 
 def show_monostable_neuron_coupling():
@@ -143,11 +142,15 @@ def show_bistable_neuron_coupling():
     show_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, f'images/2d/lyapunov_gamma_is_{gamma}.png')
 
     edges = (-5, 5)
+
+    config = model.AttractionPoolConfiguration(gamma, 0, edges, edges, 500)
+    show_attraction_pool(config, filename=f'images/2d/two_two_cycles_no_interaction.png')
+
     config = model.AttractionPoolConfiguration(gamma, 0.05, edges, edges, 500)
     show_attraction_pool(config, filename=f"images/2d/two_two_cycles.png")
 
     config = model.AttractionPoolConfiguration(gamma, 0.1, edges, edges, 500)
-    show_attraction_pool(config, filename=f"images/2d/invariant_line.png")
+    show_only_pool(config, filename=f"images/2d/invariant_line.png")
 
     config = model.AttractionPoolConfiguration(gamma, 0.3, edges, edges, 500)
     show_attraction_pool(config, filename=f"images/2d/ten_cycle.png")
@@ -158,7 +161,7 @@ def show_bistable_neuron_coupling():
 
 def show_fractal():
     config = model.AttractionPoolConfiguration(-1.1211, 0.1, (-2, 6), (-2, 6), 500)
-    show_attraction_pool(config, filename=f"images/2d/fractal.png")
+    show_only_pool(config, filename=f"images/2d/fractal.png")
 
 
 def show_2d_deterministic_graphics():

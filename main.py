@@ -7,8 +7,7 @@ import numpy as np
 import animation
 import model
 from OneDimensional import show_1d_graphics
-from TwoDimensionalDeterministic import show_2d_deterministic_graphics, show_attraction_pool, \
-    show_bifurcation_diagram_2d
+from TwoDimensionalDeterministic import show_2d_deterministic_graphics, show_attraction_pool, show_only_pool
 from TwoDimentionalStochastic import show_2d_stochastic_graphics
 
 
@@ -26,22 +25,26 @@ def timeit(func):
     return timeit_wrapper
 
 
-def make_cool_zooming_movie():
-    s = 0.1
-    g = -1.1211
+def make_cool_zooming_movie(gamma, sigma, point, radius, ratio=0.9, frames=60):
     filenames = []
 
-    frames = 50
-    b1s = -np.logspace(np.log(1), np.log(0.9775), frames, base=np.e)
-    b2s = np.logspace(np.log(1 + 1), np.log(-0.9776 + 1), frames, base=np.e) - 1
+    movie_name = f'zooming_gamma_is_{gamma}_sigma_is_{sigma}'
+    source_folder = f'animations/sources/{movie_name}'
+    os.makedirs(source_folder, exist_ok=True)
 
-    for i, (b1, b2) in enumerate(zip(b1s, b2s)):
-        config = model.AttractionPoolConfiguration(g, s, (b1, b2), (b1, b2), 300)
-        filename = f'images/image_zoom_{i}.png'
-        show_attraction_pool(config, filename=filename)
+    for i in range(frames):
+        x, y = point
+
+        x_border = (x - radius, x + radius)
+        y_border = (y - radius, y + radius)
+        config = model.AttractionPoolConfiguration(gamma, sigma, x_border, y_border, 250)
+        filename = f'{source_folder}/image_zoom_{i:04d}.png'
+        show_only_pool(config, filename=filename, show=False)
         filenames.append(filename)
 
-    animation.build_video("animations/zooming.mov", filenames)
+        radius *= ratio
+
+    animation.build_video(f'animations/{movie_name}.mov', filenames)
 
 
 def make_cool_pools():
@@ -64,23 +67,6 @@ def make_circle_pool():
     conf = model.AttractionPoolConfiguration(-1.1211, 0.1, (1, 2), (-0.5, 0.5), density=300)
     # conf = model.AttractionPoolConfiguration(-1.1211, 0.1, (1.6, 2), (-0.2, 0.2), density=500)
     show_attraction_pool(conf)
-
-
-@timeit
-def make_bif_diagram_movie(movie_name, gammas, sigmas_count=201):
-    filenames = []
-    sigmas_for_bifurcation = np.linspace(0.48, 0, sigmas_count)
-
-    os.makedirs(f'animations/sources/{movie_name}', exist_ok=True)
-
-    for i, gamma in enumerate(gammas):
-        filename = f'animations/sources/{movie_name}/diagram_{i:04d}.png'
-        filenames.append(filename)
-        show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation, filename, show=False)
-
-    animation.build_video(f"animations/{movie_name}.mov", filenames)
-
-    print(f"Complete making {movie_name} animation")
 
 
 @timeit
@@ -123,28 +109,28 @@ def make_pool_on_sigmas_movie(config: model.AttractionPoolConfiguration, sigmas)
 
 @timeit
 def main():
-    if __name__ != '__main__':
-        show_1d_graphics()
-        show_2d_deterministic_graphics()
-        show_2d_stochastic_graphics()
+    show_1d_graphics()
+    show_2d_deterministic_graphics()
+    show_2d_stochastic_graphics()
 
 
 if __name__ == '__main__':
     # main()
+
+    center = np.zeros(2)
+    make_cool_zooming_movie(-3.4562, 0.125, center, 2)
+
+    center = np.array([0.97686, 0.97686])
+    make_cool_zooming_movie(-1.1211, 0.1, center, 1, frames=120)
 
     seconds = (13.4391 + 18.3284 + 16.1223) * 10 * 10 + (83.6816 + 78.5314) * 10000 / 25
     print(f'Seconds: {seconds}')
     print(f'Minutes: {seconds / 60}')
     print(f'Hours: {seconds / 60 / 60}')
 
-    _gammas = np.linspace(-1.5, 1, 251)
-    make_bif_diagram_movie('bif_diagrams', _gammas, sigmas_count=2001)
-
-    _gammas = np.linspace(-5, -1, 401)
-    make_bif_diagram_movie('investigation_of_big_diagrams', _gammas, sigmas_count=2001)
-
-    _gammas = np.linspace(-3.46, -3.45, 201)  # gamma = -3.452 is interesting
-    make_bif_diagram_movie('interesting_bif_diagrams', _gammas, sigmas_count=2001)
+    _sigmas = np.linspace(0, 0.48, 48 * 4 + 1)
+    _config = model.AttractionPoolConfiguration(-0.7, 0, (-3, 6), (-3, 6), 500)
+    make_pool_on_sigmas_movie(_config, _sigmas)
 
     _gammas = np.linspace(-1, -1.2, 201)
     _config = model.AttractionPoolConfiguration(0, 0.1, (-2, 6), (-2, 6), 100)
@@ -152,8 +138,4 @@ if __name__ == '__main__':
 
     _sigmas = np.linspace(0, 0.48, 48 * 2 + 1)
     _config = model.AttractionPoolConfiguration(0.7, 0, (-3, 6), (-3, 6), 50)
-    make_pool_on_sigmas_movie(_config, _sigmas)
-
-    _sigmas = np.linspace(0, 0.48, 48 * 4 + 1)
-    _config = model.AttractionPoolConfiguration(-0.7, 0, (-3, 6), (-3, 6), 100)
     make_pool_on_sigmas_movie(_config, _sigmas)

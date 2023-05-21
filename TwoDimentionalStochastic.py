@@ -86,8 +86,8 @@ def show_ellipses_on_made_pool(heatmap, attractors, config, filename):
 def show_2d_stochastic_graphics():
     gamma = 0.7
     sigma = 0.01
-    epsilon = 0.01
-    border = (1.5, 2)
+    epsilon = 0.001
+    border = (1.6, 1.8)
     p = 0.95
     density = 50
     config = model.AttractionPoolConfiguration(gamma, sigma, border, border, density)
@@ -97,6 +97,9 @@ def show_2d_stochastic_graphics():
     stochastic_config.sigma = 0.03
     show_confidence_ellipses_on_attraction_pools(stochastic_config,
                                                  filename='images/stochastic/single_point_bigger_sigma.png')
+
+    if __name__ != '__main__':
+        return
 
     sigma = 0.2
     border = (-2, 7)
