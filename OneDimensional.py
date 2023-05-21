@@ -25,15 +25,19 @@ def show_stable_points():
 
 
 def show_bifurcation(attractor, repeller, chaos, attracted_points, upper_attracted_points):
-    stable_points_set = [attractor, repeller, chaos]
-
     fig, axis = plt.subplots(1, 1)
-    plot.plot_bifurcation_diagram(fig, axis, attracted_points, [])
+    plot.plot_bifurcation_diagram(fig, axis, attracted_points)
     plt.savefig("images/1d/bifurcation_only.png")
     plt.show()
 
     fig, axis = plt.subplots(1, 1)
-    plot.plot_bifurcation_diagram(fig, axis, upper_attracted_points, stable_points_set)
+    axis: plt.Axes
+    plot.plot_bifurcation_diagram(fig, axis, upper_attracted_points)
+
+    axis.plot(*attractor)
+    axis.plot(*repeller, '--')
+    axis.plot(*chaos, '--')
+
     plt.savefig("images/1d/bifurcation_with_stable.png")
     plt.show()
 
@@ -99,8 +103,8 @@ def show_portraits(gamma, *starts, steps_count=100, skip_count=0, filename=None)
 
 
 def show_several_phase_portraits():
-    show_portraits(1, 0, steps_count=40, filename='images/1d/single_attraction.png')
-    show_portraits(-0.1, 0.15203560313851436, 1.35, steps_count=41, filename='images/1d/two_cycle.png')
+    show_portraits(0.7, 0, steps_count=51, filename='images/1d/single_attraction.png')
+    show_portraits(-0.7, 0, skip_count=200, steps_count=41, filename='images/1d/two_cycle.png')
     show_portraits(-1, 2.4228133045223896, steps_count=40, filename='images/1d/four_cycles.png')
     show_portraits(-1.5, 0, skip_count=100, steps_count=100, filename='images/1d/chaos.png')
     show_portraits(-1.7471, 0, skip_count=200, steps_count=200, filename='images/1d/chaotic_burst.png')
