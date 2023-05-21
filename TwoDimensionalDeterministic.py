@@ -43,10 +43,10 @@ def show_lyapunov_exponents_2d(gamma: float, sigmas, filename=None, show=True):
 
     for attractor in attractors:
         origin = np.array(list(attractor)[0])
-        points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, steps_count=1)
+        points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas)
 
         lyapunov_origins = points_restarting[:, :, 0]
-        lyapunov_exponents = model.get_lyapunov_exponents_2d(config.gamma, lyapunov_origins, sigmas)
+        lyapunov_exponents = model.get_lyapunov_exponents_2d(gamma, lyapunov_origins, sigmas)
         lyapunov_exponents = lyapunov_exponents.T
         lyapunov_exponents_array.append(lyapunov_exponents)
 
