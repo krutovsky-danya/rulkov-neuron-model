@@ -43,6 +43,14 @@ class StochasticAttractionPoolConfiguration(AttractionPoolConfiguration):
         self.stochastic_count = stochastic_count
 
 
+def sign(x):
+    if x < 0:
+        return -1
+    if x > 0:
+        return 1
+    return 0
+
+
 @njit()
 def f(x, alpha: float = 4.1, gamma: float = -3):
     return alpha / (1 + x ** 2) + gamma
@@ -307,7 +315,10 @@ def solve_stochastic_sensitivity_matrix(function_derivative_by_point, q):
     q = q.reshape(4)
 
     b = np.eye(4) - a
-    # det_b = np.linalg.det(b)
+    det_b = np.linalg.det(b)
+
+    print(det_b)
+
     b_inv = np.linalg.inv(b)
 
     m = q @ b_inv
@@ -437,3 +448,15 @@ def get_lyapunov_exponents_2d(gamma: float, origins: np.ndarray, sigmas: np.ndar
     lyapunov_exponents = np.dstack((sigmas, lyapunov_exponents))
 
     return lyapunov_exponents
+
+
+def get_synchronization_indicator(trace: np.ndarray):
+    trace = trace.T
+    d_trace = trace[1:] - trace[:-1]
+
+    zs = []
+    for dx, dy in d_trace:
+        z = sign(dx * dy)
+        zs.append(z)
+
+    return np.array(zs)

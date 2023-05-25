@@ -7,12 +7,13 @@ import model
 import plot
 
 
-def sign(x):
-    if x < 0:
-        return -1
-    if x > 0:
-        return 1
-    return 0
+class StochasticResult:
+    def __init__(self, config, heatmap, attractors, traces, ellipses):
+        self.config = config
+        self.heatmap = heatmap
+        self.attractors = attractors
+        self.traces = traces
+        self.ellipses = ellipses
 
 
 def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5)):
@@ -43,31 +44,13 @@ def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5,
     plt.show()
 
 
-def show_confidence_ellipses_on_attraction_pools(conf: model.StochasticAttractionPoolConfiguration, filename):
-    shift = conf.shift
-    heatmap, attractors = model.get_attraction_pool(conf, *shift)
-
-    show_ellipses_on_made_pool(heatmap, attractors, conf, filename)
-
-
-def get_synchronization_indicator(trace: np.ndarray):
-    trace = trace.T
-    d_trace = trace[1:] - trace[:-1]
-
-    zs = []
-    for dx, dy in d_trace:
-        z = sign(dx * dy)
-        zs.append(z)
-
-    return np.array(zs)
-
-
-def show_ellipses_on_made_pool(heatmap, attractors, config, filename):
+def get_stochastic_result(config: model.StochasticAttractionPoolConfiguration):
     gamma = config.gamma
     sigma = config.sigma
     epsilon = config.epsilon
     p = config.p
-    extent = config.get_extent()
+    shift = config.shift
+    heatmap, attractors = model.get_attraction_pool(config, *shift)
     ellipses_sets = model.get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p)
 
     stochastic_traces = []
@@ -77,28 +60,61 @@ def show_ellipses_on_made_pool(heatmap, attractors, config, filename):
         stochastic_trace = model.get_stochastic_coupling_trace(origin, stochastic_gammas, sigma)
         stochastic_traces.append(stochastic_trace)
 
+    result = StochasticResult(config, heatmap, attractors, stochastic_traces, ellipses_sets)
+
+    return result
+
+
+def get_title_for_ellipses_graphic(config: model.StochasticAttractionPoolConfiguration):
+    gamma = config.gamma
+    sigma = config.sigma
+    epsilon = config.epsilon
+    p = config.p
+    title = f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f};$\n$\\epsilon={epsilon:.3f}; p={p:.3f}$"
+    return title
+
+
+def show_only_stochastic_traces(config: model.StochasticAttractionPoolConfiguration, filename):
+    extent = config.get_extent()
+    stochastic_result = get_stochastic_result(config)
+    heatmap = stochastic_result.heatmap
+    stochastic = stochastic_result.traces
+    ellipses = stochastic_result.ellipses
+
+    title = get_title_for_ellipses_graphic(config)
+
+    fig, ax1 = plt.subplots(1, 1)
+
+    plot.plot_stochastic_traces_on_pool(fig, ax1, title, heatmap, extent, stochastic, ellipses)
+
+    if filename is not None:
+        plt.savefig(filename)
+
+    plt.show()
+
+
+def show_confidence_ellipses_on_attraction_pools(config: model.StochasticAttractionPoolConfiguration, filename):
+    extent = config.get_extent()
+    stochastic_result = get_stochastic_result(config)
+    heatmap = stochastic_result.heatmap
+    stochastic_traces = stochastic_result.traces
+    ellipses_sets = stochastic_result.ellipses
+
+    title = get_title_for_ellipses_graphic(config)
+
     fig, (ax1, ax2) = plt.subplots(1, 2)
 
-    fig.set_size_inches(14, 7)
-    fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.3f};$\n$\\epsilon={epsilon:.3f}; p={p:.3f}$", size=14)
-
-    plot.plot_attraction_pool(fig, ax1, heatmap, extent)
+    plot.plot_stochastic_traces_on_pool(fig, ax1, title, heatmap, extent, stochastic_traces, ellipses_sets)
 
     ax2: plt.Axes
     ax2.set_ylim(-2, 2)
 
-    ax2.set_xlabel('$t$', size=15)
-    ax2.set_ylabel('$x-y$', size=15)
+    ax2.set_xlabel('$t$', size=20)
+    ax2.set_ylabel('$z$', size=20, rotation=0)
 
     for stochastic_trace in stochastic_traces:
-        ax1.plot(*stochastic_trace, '.')
-
-        zs = get_synchronization_indicator(stochastic_trace)
+        zs = model.get_synchronization_indicator(stochastic_trace)
         ax2.plot(zs, '.')
-
-    for ellipses in ellipses_sets:
-        for ellipse in ellipses:
-            ax1.plot(*ellipse.T)
 
     if filename is not None:
         plt.savefig(filename)
@@ -110,16 +126,14 @@ def show_2d_stochastic_graphics():
     gamma = 0.7
     sigma = 0.01
     epsilon = 0.001
-    border = (1.6, 1.8)
+    border = (1.7, 1.775)
     p = 0.95
     density = 50
     config = model.AttractionPoolConfiguration(gamma, sigma, border, border, density)
-    stochastic_config = model.StochasticAttractionPoolConfiguration(config, epsilon, p)
-    show_confidence_ellipses_on_attraction_pools(stochastic_config,
-                                                 filename='images/stochastic/single_point_small_sigma.png')
+    stochastic_config = model.StochasticAttractionPoolConfiguration(config, epsilon, p, stochastic_count=500)
+    show_only_stochastic_traces(stochastic_config, filename='images/stochastic/single_point_small_sigma.png')
     stochastic_config.sigma = 0.03
-    show_confidence_ellipses_on_attraction_pools(stochastic_config,
-                                                 filename='images/stochastic/single_point_bigger_sigma.png')
+    show_only_stochastic_traces(stochastic_config, filename='images/stochastic/single_point_bigger_sigma.png')
 
     sigma = 0.2
     border = (-2, 7)

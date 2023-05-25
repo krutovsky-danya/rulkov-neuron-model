@@ -154,3 +154,17 @@ def plot_lyapunov_exponents_2d(fig: plt.Figure, axis: plt.Axes, gamma, lyapunov_
         axis.plot(*lyapunov_exponents)
 
     return fig, axis
+
+
+def plot_stochastic_traces_on_pool(fig: plt.Figure, ax1: plt.Axes, title, heatmap, extent, traces, ellipses):
+    fig.set_size_inches(14, 7)
+    fig.suptitle(title, size=14)
+
+    plot_attraction_pool(fig, ax1, heatmap, extent)
+
+    for stochastic_trace in traces:
+        ax1.plot(*stochastic_trace, '.')
+
+    for ellipses in ellipses:
+        for ellipse in ellipses:
+            ax1.plot(*ellipse.T)

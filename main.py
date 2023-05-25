@@ -123,16 +123,7 @@ def make_pool_on_sigmas_movie(config: model.AttractionPoolConfiguration, sigmas)
     print(f'Complete making {movie_name}')
 
 
-@timeit
-def main():
-    show_1d_graphics()
-    show_2d_deterministic_graphics()
-    show_2d_stochastic_graphics()
-
-
-if __name__ == '__main__':
-    main()
-else:
+def make_all_animations():
     center = np.zeros(2)
     make_cool_zooming_movie(-3.4562, 0.125, center, 2)
 
@@ -150,3 +141,14 @@ else:
     _sigmas = np.linspace(0, 0.48, 48 * 2 + 1)
     _config = model.AttractionPoolConfiguration(0.7, 0, (-3, 6), (-3, 6), 50)
     make_pool_on_sigmas_movie(_config, _sigmas)
+
+
+@timeit
+def main():
+    # show_1d_graphics()
+    # show_2d_deterministic_graphics()
+    show_2d_stochastic_graphics()
+
+
+if __name__ == '__main__':
+    main()
