@@ -39,12 +39,13 @@ def make_cool_zooming_movie(gamma, sigma, point, radius, ratio=0.9, frames=60):
         x_border = (x - radius, x + radius)
         y_border = (y - radius, y + radius)
         config = model.AttractionPoolConfiguration(gamma, sigma, x_border, y_border, 250)
-        filename = f'{source_folder}/image_zoom_{i:04d}.png'
+        filename = f'image_zoom_{i:04d}.png'
+        file_path = f'{source_folder}/{filename}'
 
         if filename not in ready_filenames:
-            show_only_pool(config, filename=filename, show=False)
+            show_only_pool(config, filename=file_path, show=False)
 
-        filenames.append(filename)
+        filenames.append(file_path)
 
         radius *= ratio
 
@@ -83,12 +84,13 @@ def build_attraction_pool_moving_gamma_movie(gammas, config: model.AttractionPoo
 
     for i, gamma in enumerate(gammas):
         config.gamma = gamma
-        filename = f'{source_folder}/image_{i}.png'
+        filename = f'image_{i}.png'
+        file_path = f'{source_folder}/{filename}'
 
         if ready_files not in ready_files:
-            show_attraction_pool(config, filename=filename, show=False)
+            show_attraction_pool(config, filename=file_path, show=False)
 
-        filenames.append(filename)
+        filenames.append(file_path)
 
     movie_name = f'{directory_name}.mov'
 
@@ -107,11 +109,12 @@ def make_pool_on_sigmas_movie(config: model.AttractionPoolConfiguration, sigmas)
 
     for i, sigma in enumerate(sigmas):
         config.sigma = sigma
-        filename = f'{source_folder}/pool_{i:04d}.png'
-        filenames.append(filename)
+        filename = f'pool_{i:04d}.png'
+        file_path = f'{source_folder}/{filename}'
+        filenames.append(file_path)
 
         if filename not in ready_files:
-            show_attraction_pool(config, filename=filename, show=False)
+            show_attraction_pool(config, filename=file_path, show=False)
 
     movie_name = f'{directory_name}.mov'
 
@@ -128,8 +131,8 @@ def main():
 
 
 if __name__ == '__main__':
-    # main()
-
+    main()
+else:
     center = np.zeros(2)
     make_cool_zooming_movie(-3.4562, 0.125, center, 2)
 
