@@ -100,7 +100,7 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
         plt.close()
 
 
-def show_only_pool(config, filename, show=True):
+def show_only_pool(config, filename: str, show=True):
     extent = config.get_extent()
 
     heatmap, attractors, traces = get_attraction_pool_data(config)

@@ -7,8 +7,9 @@ import numpy as np
 import animation
 import model
 from OneDimensional import show_1d_graphics
-from TwoDimensionalDeterministic import show_2d_deterministic_graphics, show_attraction_pool, show_only_pool
-from TwoDimentionalStochastic import show_2d_stochastic_graphics
+from TwoDimensionalDeterministic import show_2d_deterministic_graphics, show_attraction_pool, show_only_pool, \
+    show_lyapunov_exponents_2d
+from TwoDimentionalStochastic import show_2d_stochastic_graphics, show_confidence_ellipses_on_attraction_pools
 
 
 def timeit(func):
@@ -27,10 +28,10 @@ def timeit(func):
 
 def make_cool_zooming_movie(gamma, sigma, point, radius, ratio=0.9, frames=60):
     filenames = []
-
-    movie_name = f'zooming_gamma_is_{gamma}_sigma_is_{sigma}'
-    source_folder = f'animations/sources/{movie_name}'
+    directory_name = f'zooming_gamma_is_{gamma}_sigma_is_{sigma}'
+    source_folder = f'animations/sources/{directory_name}'
     os.makedirs(source_folder, exist_ok=True)
+    ready_filenames = os.listdir(source_folder)
 
     for i in range(frames):
         x, y = point
@@ -39,12 +40,15 @@ def make_cool_zooming_movie(gamma, sigma, point, radius, ratio=0.9, frames=60):
         y_border = (y - radius, y + radius)
         config = model.AttractionPoolConfiguration(gamma, sigma, x_border, y_border, 250)
         filename = f'{source_folder}/image_zoom_{i:04d}.png'
-        show_only_pool(config, filename=filename, show=False)
+
+        if filename not in ready_filenames:
+            show_only_pool(config, filename=filename, show=False)
+
         filenames.append(filename)
 
         radius *= ratio
 
-    animation.build_video(f'animations/{movie_name}.mov', filenames)
+    animation.build_video(f'animations/{directory_name}.mov', filenames)
 
 
 def make_cool_pools():
@@ -73,15 +77,20 @@ def make_circle_pool():
 def build_attraction_pool_moving_gamma_movie(gammas, config: model.AttractionPoolConfiguration):
     filenames = []
     directory_name = f'pool_moving_gamma_when_sigma_is_{config.sigma}'
-    movie_name = f'{directory_name}.mov'
-
-    os.makedirs(f'animations/sources/{directory_name}', exist_ok=True)
+    source_folder = f'animations/sources/{directory_name}'
+    os.makedirs(source_folder, exist_ok=True)
+    ready_files = os.listdir(source_folder)
 
     for i, gamma in enumerate(gammas):
         config.gamma = gamma
-        filename = f'animations/sources/{directory_name}/image_{i}.png'
-        show_attraction_pool(config, filename=filename, show=False)
+        filename = f'{source_folder}/image_{i}.png'
+
+        if ready_files not in ready_files:
+            show_attraction_pool(config, filename=filename, show=False)
+
         filenames.append(filename)
+
+    movie_name = f'{directory_name}.mov'
 
     animation.build_video(f"animations/{movie_name}", filenames)
 
@@ -92,15 +101,19 @@ def build_attraction_pool_moving_gamma_movie(gammas, config: model.AttractionPoo
 def make_pool_on_sigmas_movie(config: model.AttractionPoolConfiguration, sigmas):
     filenames = []
     directory_name = f'pool_moving_sigma_gamma_is_{config.gamma}'
-    movie_name = f'{directory_name}.mov'
-
-    os.makedirs(f'animations/sources/{directory_name}', exist_ok=True)
+    source_folder = f'animations/sources/{directory_name}'
+    os.makedirs(source_folder, exist_ok=True)
+    ready_files = os.listdir(source_folder)
 
     for i, sigma in enumerate(sigmas):
         config.sigma = sigma
-        filename = f'animations/sources/{directory_name}/pool_{i:04d}.png'
+        filename = f'{source_folder}/pool_{i:04d}.png'
         filenames.append(filename)
-        show_attraction_pool(config, filename=filename, show=False)
+
+        if filename not in ready_files:
+            show_attraction_pool(config, filename=filename, show=False)
+
+    movie_name = f'{directory_name}.mov'
 
     animation.build_video(f"animations/{movie_name}", filenames)
 
@@ -122,11 +135,6 @@ if __name__ == '__main__':
 
     center = np.array([0.97686, 0.97686])
     make_cool_zooming_movie(-1.1211, 0.1, center, 1, frames=120)
-
-    seconds = (13.4391 + 18.3284 + 16.1223) * 10 * 10 + (83.6816 + 78.5314) * 10000 / 25
-    print(f'Seconds: {seconds}')
-    print(f'Minutes: {seconds / 60}')
-    print(f'Hours: {seconds / 60 / 60}')
 
     _sigmas = np.linspace(0, 0.48, 48 * 4 + 1)
     _config = model.AttractionPoolConfiguration(-0.7, 0, (-3, 6), (-3, 6), 500)

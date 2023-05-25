@@ -7,6 +7,14 @@ import model
 import plot
 
 
+def sign(x):
+    if x < 0:
+        return -1
+    if x > 0:
+        return 1
+    return 0
+
+
 def show_stochastic_2d_graphics(gamma=-0.7, sigma=0.05, epsilon=0.1, border=(-5, 5)):
     config = model.AttractionPoolConfiguration(gamma, sigma, border, border, 20, 500, 20)
 
@@ -42,6 +50,18 @@ def show_confidence_ellipses_on_attraction_pools(conf: model.StochasticAttractio
     show_ellipses_on_made_pool(heatmap, attractors, conf, filename)
 
 
+def get_synchronization_indicator(trace: np.ndarray):
+    trace = trace.T
+    d_trace = trace[1:] - trace[:-1]
+
+    zs = []
+    for dx, dy in d_trace:
+        z = sign(dx * dy)
+        zs.append(z)
+
+    return np.array(zs)
+
+
 def show_ellipses_on_made_pool(heatmap, attractors, config, filename):
     gamma = config.gamma
     sigma = config.sigma
@@ -64,15 +84,17 @@ def show_ellipses_on_made_pool(heatmap, attractors, config, filename):
 
     plot.plot_attraction_pool(fig, ax1, heatmap, extent)
 
+    ax2: plt.Axes
+    ax2.set_ylim(-2, 2)
+
     ax2.set_xlabel('$t$', size=15)
     ax2.set_ylabel('$x-y$', size=15)
 
     for stochastic_trace in stochastic_traces:
         ax1.plot(*stochastic_trace, '.')
 
-        xs, ys = stochastic_trace
-        # ax2.plot(np.abs(xs - ys))
-        ax2.plot(xs - ys, '.')
+        zs = get_synchronization_indicator(stochastic_trace)
+        ax2.plot(zs, '.')
 
     for ellipses in ellipses_sets:
         for ellipse in ellipses:
