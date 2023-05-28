@@ -58,7 +58,7 @@ def f(x, alpha: float = 4.1, gamma: float = -3):
 
 @njit()
 def f_(x, alpha: float = 4.1):
-    return (2 * alpha * x) / ((1 + x ** 2) ** 2)
+    return - (2 * alpha * x) / ((1 + x ** 2) ** 2)
 
 
 @njit()
@@ -68,7 +68,7 @@ def invert_stable_point(x, alpha: float = 4.1):
 
 @njit()
 def invert_stable_point_(x, alpha: float = 4.1):
-    return 1 + f_(x, alpha)
+    return 1 - f_(x, alpha)
 
 
 def get_repeller_bounds(xs, alpha: float = 4.1) -> np.ndarray:
@@ -398,7 +398,7 @@ def get_confidence_ellipses_for_k_cycle(sigma, epsilon, p, k_cycle):
     return ellipses
 
 
-def get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p):
+def get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p, k_max=10):
     for attractor in attractors:
         attractor = list(attractor)
         if len(attractor) == 1:
@@ -408,6 +408,10 @@ def get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p)
         else:
             k_cycle = list(attractor)
             k = len(k_cycle)
+
+            if k > k_max:
+                continue
+
             k_cycle = get_points(np.array(k_cycle[0]), gamma, sigma, k, 200).T
             ellipses = get_confidence_ellipses_for_k_cycle(sigma, epsilon, p, k_cycle)
             yield ellipses
