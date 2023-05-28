@@ -120,11 +120,11 @@ def configure_attraction_pool_figure(fig: plt.Figure, gamma, sigma):
     return fig
 
 
-def plot_attraction_pool(figure: plt.Figure, axis: plt.Axes, pools, extent):
+def plot_attraction_pool(figure: plt.Figure, axis: plt.Axes, pools, extent, cmap='Greens'):
     axis.set_xlabel('$x$', size=20)
     axis.set_ylabel('$y$', size=20, rotation=0)
 
-    axis.imshow(pools.T[::-1], extent=extent, cmap='Greens')
+    axis.imshow(pools.T[::-1], extent=extent, cmap=cmap)
 
     axis.set_xlim(extent[:2])
     axis.set_ylim(extent[2:])
@@ -156,15 +156,27 @@ def plot_lyapunov_exponents_2d(fig: plt.Figure, axis: plt.Axes, gamma, lyapunov_
     return fig, axis
 
 
-def plot_stochastic_traces_on_pool(fig: plt.Figure, ax1: plt.Axes, title, heatmap, extent, traces, ellipses):
+def plot_stochastic_traces_on_pool(fig: plt.Figure, axes: plt.Axes, title, heatmap, extent, traces, ellipses):
     fig.set_size_inches(14, 7)
     fig.suptitle(title, size=14)
 
-    plot_attraction_pool(fig, ax1, heatmap, extent)
+    plot_attraction_pool(fig, axes, heatmap, extent)
 
     for stochastic_trace in traces:
-        ax1.plot(*stochastic_trace, '.')
+        axes.plot(*stochastic_trace, '.')
 
     for ellipses in ellipses:
         for ellipse in ellipses:
-            ax1.plot(*ellipse.T)
+            axes.plot(*ellipse.T)
+
+
+def plot_synchronization_indicator(axes: plt.Axes, synchronization_indicators):
+    axes.set_ylim(-2, 2)
+
+    axes.set_xlabel('$t$', size=20)
+    axes.set_ylabel('$z$', size=20, rotation=0)
+
+    for synchronization_indicator in synchronization_indicators:
+        axes.plot(synchronization_indicator)
+
+    return axes
