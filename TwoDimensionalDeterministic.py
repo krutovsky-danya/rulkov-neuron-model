@@ -83,7 +83,7 @@ def show_attraction_pool(config: model.AttractionPoolConfiguration, filename=Non
     heatmap, attractors, traces = get_attraction_pool_data(config)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
-
+    fig.set_size_inches(14, 7)
     plot.configure_attraction_pool_figure(fig, config.gamma, config.sigma)
     plot.plot_attraction_pool_with_attractors(fig, ax1, heatmap, extent, attractors)
     plot.plot_attraction_pool_with_attractors(fig, ax2, heatmap, extent, attractors)
@@ -106,6 +106,7 @@ def show_only_pool(config, filename: str, show=True):
     heatmap, attractors, traces = get_attraction_pool_data(config)
 
     fig, axis = plt.subplots()
+    fig.set_size_inches(7, 7)
 
     plot.configure_attraction_pool_figure(fig, config.gamma, config.sigma)
     plot.plot_attraction_pool(fig, axis, heatmap, extent)

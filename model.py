@@ -43,6 +43,16 @@ class StochasticAttractionPoolConfiguration(AttractionPoolConfiguration):
         self.stochastic_count = stochastic_count
 
 
+class StochasticResult:
+    def __init__(self, config, heatmap, attractors, traces, ellipses, synchronization_indicators):
+        self.config = config
+        self.heatmap = heatmap
+        self.attractors = attractors
+        self.traces = traces
+        self.ellipses = ellipses
+        self.synchronization_indicators = synchronization_indicators
+
+
 def sign(x):
     if x < 0:
         return -1
@@ -315,9 +325,6 @@ def solve_stochastic_sensitivity_matrix(function_derivative_by_point, q):
     q = q.reshape(4)
 
     b = np.eye(4) - a
-    det_b = np.linalg.det(b)
-
-    print(det_b)
 
     b_inv = np.linalg.inv(b)
 

@@ -115,7 +115,6 @@ def plot_bifurcation_diagram_2d(fig: plt.Figure, axis: plt.Axes, gamma, points_s
 
 
 def configure_attraction_pool_figure(fig: plt.Figure, gamma, sigma):
-    fig.set_size_inches(14, 7)
     fig.suptitle(f"$\\gamma={gamma:.4f}; \\sigma={sigma:.5f}$", size=14)
     return fig
 
@@ -156,11 +155,11 @@ def plot_lyapunov_exponents_2d(fig: plt.Figure, axis: plt.Axes, gamma, lyapunov_
     return fig, axis
 
 
-def plot_stochastic_traces_on_pool(fig: plt.Figure, axes: plt.Axes, title, heatmap, extent, traces, ellipses):
-    fig.set_size_inches(14, 7)
+def plot_stochastic_traces_on_pool(fig: plt.Figure, axes: plt.Axes, title, heatmap, extent, traces, ellipses,
+                                   cmap='Greens_r'):
     fig.suptitle(title, size=14)
 
-    plot_attraction_pool(fig, axes, heatmap, extent)
+    plot_attraction_pool(fig, axes, heatmap, extent, cmap=cmap)
 
     for stochastic_trace in traces:
         axes.plot(*stochastic_trace, '.')

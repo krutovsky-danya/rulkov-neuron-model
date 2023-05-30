@@ -141,3 +141,5 @@ $x_1 \approx -0.02865, x_2 \approx 2.29664, x_3 \approx -1.14657$.
 ![Фазовый портрет при $\gamma = -3.3$](images/1d/chaos_and_stable.png)
 
 Рассмотрим значение параметра $\gamma$, когда в системе присутствует и хаотическое блуждание и моно-стабильность. При таком $\gamma$ хаотическое блуждание не проходит через границу репеллера, хоть и приближается к нему сколь угодно близко, при этом задерживаясь у него на некоторое время.
+
+[<img src="https://drive.google.com/file/d/16S9m52CQKo2wjfgdYiYnc4yJf_lj_9MF/view?usp=sharing">](https://drive.google.com/file/d/16S9m52CQKo2wjfgdYiYnc4yJf_lj_9MF/view?usp=sharing)
