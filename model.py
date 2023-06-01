@@ -4,6 +4,8 @@ from typing import Generator, Tuple, Any
 import numpy as np
 from numba import njit, int32, float32
 
+from infrastructure import timeit
+
 spec = [
     ('gamma', float32),
     ('sigma', float32),
@@ -212,7 +214,11 @@ def same_coupling_f(point: np.ndarray, alfa=4.1, gamma=0.8, sigma=0.1) -> np.nda
     move: np.ndarray = f(point, alfa, gamma)
     x, y = point
     delta = y - x
-    return move + sigma * np.array([delta, -delta])
+    coupling = np.zeros(point.shape)
+    coupling[0] = delta
+    coupling[1] = -delta
+    coupling = sigma * coupling
+    return move + coupling
 
 
 @njit()
@@ -270,9 +276,9 @@ def get_attractor_index(points, attractors: list, max_points):
     return len(attractors)
 
 
-def get_attraction_pool(config: AttractionPoolConfiguration, dx=0, dy=0):
+@timeit
+def get_attraction_pool_old(config: AttractionPoolConfiguration, dx=0, dy=0):
     size = config.density
-    # dx, dy = np.random.uniform(-1, 1, 2) / size ** 2
     x_set = np.linspace(config.x_min, config.x_max, config.density) + dx
     y_set = np.linspace(config.y_min, config.y_max, config.density) + dy
     cycles_map = np.zeros((size, size))
@@ -292,6 +298,92 @@ def get_attraction_pool(config: AttractionPoolConfiguration, dx=0, dy=0):
         attractors.remove([])
 
     return cycles_map, attractors
+
+
+def get_cell_diameter(config: AttractionPoolConfiguration):
+    dx = config.x_max - config.x_min
+    dy = config.y_max - config.y_min
+
+    d = min(dx, dy)
+
+    return d / config.density
+
+
+def get_attractor_index_numpy(origin: np.ndarray, radius: float, attractors: list):
+    for i, attractor in enumerate(attractors):
+        for p in attractor:
+            distance = np.linalg.norm(p - origin)
+            if distance < radius:
+                return i
+    return -1
+
+
+def get_attractor_trace(origin: np.ndarray, gamma: float, sigma: float, radius: float, limit: int):
+    trace = []
+    point = origin
+
+    for _ in range(limit):
+        trace.append(point)
+        point = same_coupling_f(point, gamma=gamma, sigma=sigma)
+        distance = np.linalg.norm(origin - point)
+        if distance < radius:
+            break
+
+    return trace
+
+
+@timeit
+def get_attraction_pool(config: AttractionPoolConfiguration, dx=0, dy=0):
+    x_set = np.linspace(config.x_min, config.x_max, config.density) + dx
+    y_set = np.linspace(config.y_min, config.y_max, config.density) + dy
+
+    xs = np.stack([x_set] * config.density, axis=0)
+    ys = np.stack([y_set] * config.density, axis=1)
+
+    points = np.array([xs, ys])
+    for i in range(config.skip):
+        points = same_coupling_f(points, gamma=config.gamma, sigma=config.sigma)
+
+    taken_points = np.zeros((2, config.take, config.density, config.density))
+
+    for i in range(config.take):
+        points = same_coupling_f(points, gamma=config.gamma, sigma=config.sigma)
+        taken_points[:, i] = points
+
+    x, y = taken_points
+    heatmap = np.abs(x - y).mean(axis=0)
+
+    radius = get_cell_diameter(config) / 2
+    decimals = int(-np.log10(radius))
+    attractor_starts = np.reshape(points, (2, config.density ** 2)).T
+    attractor_starts = np.round(attractor_starts, decimals)
+    attractor_starts = np.unique(attractor_starts, axis=0)
+
+    limit = config.take
+
+    attractors = []
+    overflowed = []
+    for i, start in enumerate(attractor_starts):
+        index = get_attractor_index_numpy(start, radius, attractors)
+
+        if index == -1:
+            attractor = get_attractor_trace(start, config.gamma, config.sigma, radius, limit)
+
+            if len(attractor) < limit:
+                attractors.append(attractor)
+            else:
+                overflowed = attractor
+
+    if len(overflowed) > 0:
+        attractors.append(overflowed)
+
+    for i in range(len(attractors)):
+        attractor = attractors[i]
+        start = attractor[-1]
+        attractor = get_points(start, config.gamma, config.sigma, len(attractor), config.skip).T
+        attractors[i] = np.unique(attractor, axis=0)
+
+    return heatmap, attractors
 
 
 def stochastic_coupling_f(x, y, gamma_x, gamma_y, sigma):
