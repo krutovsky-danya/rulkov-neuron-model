@@ -306,7 +306,6 @@ def get_attractor_trace(origin: np.ndarray, gamma: float, sigma: float, radius: 
     return trace
 
 
-@njit()
 def get_attractors(points, radius, limit, gamma, sigma):
     decimals = int(-np.log10(radius))
 
