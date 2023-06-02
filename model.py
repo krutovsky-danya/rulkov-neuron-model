@@ -277,12 +277,18 @@ def get_parametrized_points(sigmas, points: np.ndarray, dim=0):
     return parametrized.T
 
 
-def get_attractor_index(origin: np.ndarray, radius: float, attractors: list):
+def get_attractor_index(origin: np.ndarray, radius: float, attractors: list, overflowed: list):
     for i, attractor in enumerate(attractors):
         for p in attractor:
             distance = np.linalg.norm(p - origin)
             if distance < radius:
                 return i
+
+    for point in overflowed:
+        distance = np.linalg.norm(point - origin)
+        if distance < radius:
+            return -2
+
     return -1
 
 
@@ -300,6 +306,36 @@ def get_attractor_trace(origin: np.ndarray, gamma: float, sigma: float, radius: 
     return trace
 
 
+@njit()
+def get_attractors(points, radius, limit, gamma, sigma):
+    decimals = int(-np.log10(radius))
+
+    d, h, w = points.shape
+
+    reshaped = np.reshape(points, (d, h * w)).T
+    attractor_starts = np.round(reshaped, decimals)
+    unique, indexes = np.unique(attractor_starts, return_index=True, axis=0)
+
+    attractors = []
+    overflowed = []
+    for i, index in enumerate(indexes):
+        start = reshaped[index]
+        attractor_index = get_attractor_index(start, radius, attractors, overflowed)
+
+        if attractor_index == -1:
+            attractor = get_attractor_trace(start, gamma, sigma, radius, limit)
+
+            if len(attractor) < limit:
+                attractors.append(attractor)
+            else:
+                overflowed = attractor
+
+    if len(overflowed) > 0:
+        attractors.append(overflowed)
+
+    return attractors
+
+
 @timeit
 def get_attraction_pool(config: AttractionPoolConfiguration, dx=0, dy=0):
     x_set = np.linspace(config.x_min, config.x_max, config.density) + dx
@@ -310,40 +346,15 @@ def get_attraction_pool(config: AttractionPoolConfiguration, dx=0, dy=0):
 
     points = np.array([xs, ys])
     taken_points = get_points_2d(points, config.gamma, config.sigma, config.skip, config.take)
+
     points = taken_points[-1]
     taken_points = taken_points.transpose((1, 0, 2, 3))
+
     x, y = taken_points
     heatmap = np.abs(x - y).mean(axis=0)
 
     radius = config.get_cell_diameter() / 2
-    decimals = int(-np.log10(radius))
-    attractor_starts = np.reshape(points, (2, config.density ** 2)).T
-    attractor_starts = np.round(attractor_starts, decimals)
-    attractor_starts = np.unique(attractor_starts, axis=0)
-
-    limit = config.take
-
-    attractors = []
-    overflowed = []
-    for i, start in enumerate(attractor_starts):
-        index = get_attractor_index(start, radius, attractors)
-
-        if index == -1:
-            attractor = get_attractor_trace(start, config.gamma, config.sigma, radius, limit)
-
-            if len(attractor) < limit:
-                attractors.append(attractor)
-            else:
-                overflowed = attractor
-
-    if len(overflowed) > 0:
-        attractors.append(overflowed)
-
-    for i in range(len(attractors)):
-        attractor = attractors[i]
-        start = attractor[-1]
-        attractor = get_points(start, config.gamma, config.sigma, len(attractor), config.skip).T
-        attractors[i] = np.unique(attractor, axis=0)
+    attractors = get_attractors(points, radius, config.take, config.gamma, config.sigma)
 
     return heatmap, attractors
 
