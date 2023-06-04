@@ -293,17 +293,30 @@ def get_attractor_index(origin: np.ndarray, radius: float, attractors: list, ove
 
 
 def get_attractor_trace(origin: np.ndarray, gamma: float, sigma: float, radius: float, limit: int):
-    trace = []
+    cycle = []
     point = origin
 
     for _ in range(limit):
-        trace.append(point)
+        cycle.append(point)
         point = same_coupling_f(point, gamma=gamma, sigma=sigma)
         distance = np.linalg.norm(origin - point)
         if distance < radius:
             break
 
-    return trace
+    match = True
+    k = len(cycle)
+    trace = list(cycle)
+    trace.append(point)
+    for i in range(k + 1, limit):
+        point = same_coupling_f(point, gamma=gamma, sigma=sigma)
+        distance = np.linalg.norm(trace[i - k] - point)
+        match = match and (distance < radius)
+        trace.append(point)
+
+    if match:
+        return cycle
+    else:
+        return trace
 
 
 def get_attractors(points, radius, limit, gamma, sigma):
