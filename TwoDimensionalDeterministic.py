@@ -65,12 +65,13 @@ def show_lyapunov_exponents_2d(gamma: float, sigmas, filename=None, show=True):
 
 def get_attraction_pool_data(config: model.AttractionPoolConfiguration):
     heatmap, attractors = model.get_attraction_pool(config)
+    take = max(200, config.take, config.skip)
 
     traces = []
     for i in range(len(attractors)):
         attractor = list(attractors[i])
         origin = np.array(attractor[0])
-        trace = model.get_points(origin, config.gamma, config.sigma, 200, config.skip)
+        trace = model.get_points(origin, config.gamma, config.sigma, take, config.skip)
         traces.append(trace)
         attractors[i] = np.unique(trace, axis=1)
 
@@ -161,7 +162,7 @@ def show_bistable_neuron_coupling():
 
 
 def show_fractal():
-    config = model.AttractionPoolConfiguration(-1.1211, 0.1, (-2, 6), (-2, 6), 500)
+    config = model.AttractionPoolConfiguration(-1.1211, 0.1, (-2, 6), (-2, 6), 1000)
     show_only_pool(config, filename=f"images/2d/fractal.png")
 
 
