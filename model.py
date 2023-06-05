@@ -4,6 +4,8 @@ from typing import Generator, Tuple, Any
 import numpy as np
 from numba import njit, int32, float32
 
+from infrastructure import timeit
+
 spec = [
     ('gamma', float32),
     ('sigma', float32),
@@ -30,6 +32,14 @@ class AttractionPoolConfiguration:
     def get_extent(self):
         extent = [self.x_min, self.x_max, self.y_min, self.y_max]
         return extent
+
+    def get_cell_diameter(self):
+        dx = self.x_max - self.x_min
+        dy = self.y_max - self.y_min
+
+        d = min(dx, dy)
+
+        return d / self.density
 
 
 class StochasticAttractionPoolConfiguration(AttractionPoolConfiguration):
@@ -212,21 +222,33 @@ def same_coupling_f(point: np.ndarray, alfa=4.1, gamma=0.8, sigma=0.1) -> np.nda
     move: np.ndarray = f(point, alfa, gamma)
     x, y = point
     delta = y - x
-    return move + sigma * np.array([delta, -delta])
+    coupling = np.zeros(point.shape)
+    coupling[0] = delta
+    coupling[1] = -delta
+    coupling = sigma * coupling
+    return move + coupling
 
 
 @njit()
-def get_points(point: np.ndarray, gamma: float, sigma=0.1, steps_count=100, skip_count=0) -> np.ndarray:
-    for i in range(skip_count):
-        point = same_coupling_f(point, gamma=gamma, sigma=sigma)
+def get_points(point: np.ndarray, gamma: float, sigma=0.1, take=100, skip=0) -> np.ndarray:
+    taken_points = get_points_2d(point, gamma, sigma, skip, take)
+    return taken_points.transpose((1, 0))
 
-    trace = np.zeros((steps_count, 2))
 
-    trace[0] = point
-    for i in range(1, steps_count):
-        trace[i] = point = same_coupling_f(point, gamma=gamma, sigma=sigma)
+@njit()
+def get_points_2d(points, gamma, sigma, skip, take):
+    for i in range(skip):
+        points = same_coupling_f(points, gamma=gamma, sigma=sigma)
 
-    return trace.T
+    shape = (take, *points.shape)
+    taken_points = np.zeros(shape)
+
+    taken_points[0] = points
+    for i in range(1, take):
+        points = same_coupling_f(points, gamma=gamma, sigma=sigma)
+        taken_points[i] = points
+
+    return taken_points
 
 
 @njit()
@@ -255,43 +277,98 @@ def get_parametrized_points(sigmas, points: np.ndarray, dim=0):
     return parametrized.T
 
 
-def get_attractor_index(points, attractors: list, max_points):
-    rounded = np.around(points, 5)
-    frozen = frozenset(map(tuple, rounded.tolist()))
+def get_attractor_index(origin: np.ndarray, radius: float, attractors: list, overflowed: list):
+    for i, attractor in enumerate(attractors):
+        for p in attractor:
+            distance = np.linalg.norm(p - origin)
+            if distance < radius:
+                return i
 
-    if len(frozen) >= 0.8 * max_points:
-        if len(attractors[0]) == 0:
-            attractors[0] = frozen
-        return 0
-    if frozen in attractors:
-        return attractors.index(frozen) + 1
+    for point in overflowed:
+        distance = np.linalg.norm(point - origin)
+        if distance < radius:
+            return -2
 
-    attractors.append(frozen)
-    return len(attractors)
+    return -1
 
 
+def get_attractor_trace(origin: np.ndarray, gamma: float, sigma: float, radius: float, limit: int):
+    cycle = []
+    point = origin
+
+    for _ in range(limit):
+        cycle.append(point)
+        point = same_coupling_f(point, gamma=gamma, sigma=sigma)
+        distance = np.linalg.norm(origin - point)
+        if distance < radius:
+            break
+
+    match = True
+    k = len(cycle)
+    trace = list(cycle)
+    trace.append(point)
+    for i in range(k + 1, limit):
+        point = same_coupling_f(point, gamma=gamma, sigma=sigma)
+        distance = np.linalg.norm(trace[i - k] - point)
+        match = match and (distance < radius)
+        trace.append(point)
+
+    if match:
+        return cycle
+    else:
+        return trace
+
+
+def get_attractors(points, radius, limit, gamma, sigma):
+    decimals = int(-np.log10(radius))
+
+    d, h, w = points.shape
+
+    reshaped = np.reshape(points, (d, h * w)).T
+    attractor_starts = np.round(reshaped, decimals)
+    unique, indexes = np.unique(attractor_starts, return_index=True, axis=0)
+
+    attractors = []
+    overflowed = []
+    for i, index in enumerate(indexes):
+        start = reshaped[index]
+        attractor_index = get_attractor_index(start, radius, attractors, overflowed)
+
+        if attractor_index == -1:
+            attractor = get_attractor_trace(start, gamma, sigma, radius, limit)
+
+            if len(attractor) < limit:
+                attractors.append(attractor)
+            else:
+                overflowed = attractor
+
+    if len(overflowed) > 0:
+        attractors.append(overflowed)
+
+    return attractors
+
+
+@timeit
 def get_attraction_pool(config: AttractionPoolConfiguration, dx=0, dy=0):
-    size = config.density
-    # dx, dy = np.random.uniform(-1, 1, 2) / size ** 2
     x_set = np.linspace(config.x_min, config.x_max, config.density) + dx
     y_set = np.linspace(config.y_min, config.y_max, config.density) + dy
-    cycles_map = np.zeros((size, size))
 
-    attractors = [[]]
+    xs = np.stack([x_set] * config.density, axis=0)
+    ys = np.stack([y_set] * config.density, axis=1)
 
-    for j, y in enumerate(y_set):
-        for i, x in enumerate(x_set):
-            point = np.array([x, y])
-            points = get_points(point, config.gamma, config.sigma, config.take, config.skip)
-            points = points.T
-            attractor_index = get_attractor_index(points, attractors, config.take)
+    points = np.array([xs, ys])
+    taken_points = get_points_2d(points, config.gamma, config.sigma, config.skip, config.take)
 
-            cycles_map[i, j] = attractor_index
+    points = taken_points[-1]
+    taken_points = taken_points.transpose((1, 0, 2, 3))
 
-    if len(attractors[0]) == 0:
-        attractors.remove([])
+    x, y = taken_points
+    heatmap = np.abs(x - y).mean(axis=0)
 
-    return cycles_map, attractors
+    radius = config.get_cell_diameter() / 2
+    attractors = get_attractors(points, radius, config.take, config.gamma, config.sigma)
+
+    return heatmap, attractors
 
 
 def stochastic_coupling_f(x, y, gamma_x, gamma_y, sigma):
@@ -429,7 +506,7 @@ def get_lyapunov_exponent_2d(gamma: float, sigma: float, origin: np.ndarray, del
     r = (2 ** -0.5) * np.array([delta, delta])
 
     x = np.round(origin, 9)
-    xs = get_points(x, gamma, sigma, steps_count=steps_count, skip_count=1).T
+    xs = get_points(x, gamma, sigma, take=steps_count, skip=1).T
 
     xv = x + r
 
@@ -471,3 +548,13 @@ def get_synchronization_indicator(trace: np.ndarray):
         zs.append(z)
 
     return np.array(zs)
+
+
+def main():
+    e = (-5, 5)
+    c = AttractionPoolConfiguration(-0.7, 0.1, e, e, 201, 100, 10)
+    get_attraction_pool(c)
+
+
+if __name__ == '__main__':
+    main()

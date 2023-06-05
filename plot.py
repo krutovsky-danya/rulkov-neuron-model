@@ -138,8 +138,8 @@ def plot_attractors(figure: plt.Figure, axis: plt.Axes, attractors):
     return figure, axis
 
 
-def plot_attraction_pool_with_attractors(fig: plt.Figure, axis: plt.Axes, heatmap, extent, attractors):
-    plot_attraction_pool(fig, axis, heatmap, extent)
+def plot_attraction_pool_with_attractors(fig: plt.Figure, axis: plt.Axes, heatmap, extent, attractors, cmap):
+    plot_attraction_pool(fig, axis, heatmap, extent, cmap)
     plot_attractors(fig, axis, attractors)
 
 

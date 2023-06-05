@@ -1,55 +1,8 @@
-import os
-import time
-from functools import wraps
-
-import numpy as np
-
-import animation
 import model
 from OneDimensional import show_1d_graphics
-from TwoDimensionalDeterministic import show_2d_deterministic_graphics, show_attraction_pool, show_only_pool, \
-    show_lyapunov_exponents_2d
-from TwoDimentionalStochastic import show_2d_stochastic_graphics, show_confidence_ellipses_on_attraction_pools
-
-
-def timeit(func):
-    @wraps(func)
-    def timeit_wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        total_time = end_time - start_time
-        # print(f'Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
-        print(f'Function {func.__name__} Took {total_time:.4f} seconds')
-        return result
-
-    return timeit_wrapper
-
-
-def make_cool_zooming_movie(gamma, sigma, point, radius, ratio=0.9, frames=60):
-    filenames = []
-    directory_name = f'zooming_gamma_is_{gamma}_sigma_is_{sigma}'
-    source_folder = f'animations/sources/{directory_name}'
-    os.makedirs(source_folder, exist_ok=True)
-    ready_filenames = os.listdir(source_folder)
-
-    for i in range(frames):
-        x, y = point
-
-        x_border = (x - radius, x + radius)
-        y_border = (y - radius, y + radius)
-        config = model.AttractionPoolConfiguration(gamma, sigma, x_border, y_border, 250)
-        filename = f'image_zoom_{i:04d}.png'
-        file_path = f'{source_folder}/{filename}'
-
-        if filename not in ready_filenames:
-            show_only_pool(config, filename=file_path, show=False)
-
-        filenames.append(file_path)
-
-        radius *= ratio
-
-    animation.build_video(f'animations/{directory_name}.mov', filenames)
+from TwoDimensionalDeterministic import show_2d_deterministic_graphics, show_attraction_pool
+from TwoDimentionalStochastic import show_2d_stochastic_graphics
+from infrastructure import timeit
 
 
 def make_cool_pools():
@@ -75,78 +28,9 @@ def make_circle_pool():
 
 
 @timeit
-def build_attraction_pool_moving_gamma_movie(gammas, config: model.AttractionPoolConfiguration):
-    filenames = []
-    directory_name = f'pool_moving_gamma_when_sigma_is_{config.sigma}'
-    source_folder = f'animations/sources/{directory_name}'
-    os.makedirs(source_folder, exist_ok=True)
-    ready_files = os.listdir(source_folder)
-
-    for i, gamma in enumerate(gammas):
-        config.gamma = gamma
-        filename = f'image_{i}.png'
-        file_path = f'{source_folder}/{filename}'
-
-        if ready_files not in ready_files:
-            show_attraction_pool(config, filename=file_path, show=False)
-
-        filenames.append(file_path)
-
-    movie_name = f'{directory_name}.mov'
-
-    animation.build_video(f"animations/{movie_name}", filenames)
-
-    print(f'Complete making {movie_name}')
-
-
-@timeit
-def make_pool_on_sigmas_movie(config: model.AttractionPoolConfiguration, sigmas):
-    filenames = []
-    directory_name = f'pool_moving_sigma_gamma_is_{config.gamma}'
-    source_folder = f'animations/sources/{directory_name}'
-    os.makedirs(source_folder, exist_ok=True)
-    ready_files = os.listdir(source_folder)
-
-    for i, sigma in enumerate(sigmas):
-        config.sigma = sigma
-        filename = f'pool_{i:04d}.png'
-        file_path = f'{source_folder}/{filename}'
-        filenames.append(file_path)
-
-        if filename not in ready_files:
-            show_attraction_pool(config, filename=file_path, show=False)
-
-    movie_name = f'{directory_name}.mov'
-
-    animation.build_video(f"animations/{movie_name}", filenames)
-
-    print(f'Complete making {movie_name}')
-
-
-def make_all_animations():
-    center = np.zeros(2)
-    make_cool_zooming_movie(-3.4562, 0.125, center, 2)
-
-    center = np.array([0.97686, 0.97686])
-    make_cool_zooming_movie(-1.1211, 0.1, center, 1, frames=120)
-
-    _sigmas = np.linspace(0, 0.48, 48 * 4 + 1)
-    _config = model.AttractionPoolConfiguration(-0.7, 0, (-3, 6), (-3, 6), 500)
-    make_pool_on_sigmas_movie(_config, _sigmas)
-
-    _gammas = np.linspace(-1, -1.2, 201)
-    _config = model.AttractionPoolConfiguration(0, 0.1, (-2, 6), (-2, 6), 100)
-    build_attraction_pool_moving_gamma_movie(_gammas, _config)
-
-    _sigmas = np.linspace(0, 0.48, 48 * 2 + 1)
-    _config = model.AttractionPoolConfiguration(0.7, 0, (-3, 6), (-3, 6), 50)
-    make_pool_on_sigmas_movie(_config, _sigmas)
-
-
-@timeit
 def main():
-    # show_1d_graphics()
-    # show_2d_deterministic_graphics()
+    show_1d_graphics()
+    show_2d_deterministic_graphics()
     show_2d_stochastic_graphics()
 
 

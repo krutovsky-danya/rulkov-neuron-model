@@ -171,11 +171,11 @@ def show_2d_stochastic_two_two_cycles_co_exist_graphics():
 
     series_folder = f'{folder}/series/two_cycles_co_exists'
     os.makedirs(series_folder, exist_ok=True)
-    for i, epsilon in enumerate(np.linspace(0.1, 0.24, 15)):
-        for j in range(5):
-            stochastic_config.epsilon = epsilon
-            filename = f'{series_folder}/image_{i:04d}_{j:04d}.png'
-            show_ellipses_on_made_pool(heatmap, attractors, stochastic_config, filename)
+    # for i, epsilon in enumerate(np.linspace(0.1, 0.24, 15)):
+    #     for j in range(5):
+    #         stochastic_config.epsilon = epsilon
+    #         filename = f'{series_folder}/image_{i:04d}_{j:04d}.png'
+    #         show_ellipses_on_made_pool(heatmap, attractors, stochastic_config, filename)
 
 
 def show_2d_stochastic_invariant_curve_graphics():
@@ -220,15 +220,15 @@ def show_2d_stochastic_2_and_4_cycles_graphics():
 
     config = model.AttractionPoolConfiguration(gamma, sigma, border, border, density)
     stochastic_config = model.StochasticAttractionPoolConfiguration(config, epsilon, p, stochastic_count=500)
-    shift = stochastic_config.shift
-    heatmap, attractors = model.get_attraction_pool(stochastic_config, *shift)
+    # shift = stochastic_config.shift
+    # heatmap, attractors = model.get_attraction_pool(stochastic_config, *shift)
 
     source_folder = 'images/stochastic/series/two_and_four'
     os.makedirs(source_folder, exist_ok=True)
-    for i, epsilon in enumerate(np.linspace(0.09, 0.095, 21)):
-        stochastic_config.epsilon = epsilon
-        filename = f'{source_folder}/image_{i}.png'
-        show_ellipses_on_made_pool(heatmap, attractors, stochastic_config, filename)
+    # for i, epsilon in enumerate(np.linspace(0.09, 0.095, 21)):
+    #     stochastic_config.epsilon = epsilon
+    #     filename = f'{source_folder}/image_{i}.png'
+    #     show_ellipses_on_made_pool(heatmap, attractors, stochastic_config, filename)
 
     show_confidence_ellipses(stochastic_config, filename='images/stochastic/two_and_four_cycles.png')
 
