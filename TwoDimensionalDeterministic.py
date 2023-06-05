@@ -16,22 +16,25 @@ def show_bifurcation_diagram_and_lyapunov_exponents_2d(gamma, sigmas, biff_filen
     config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num)
     _, attractors = model.get_attraction_pool(config)
 
-    show_bifurcation_diagram_2d_(gamma, sigmas, attractors, biff_filename, show)
-
-    show_lyapunov_exponents_2d_(gamma, sigmas, attractors, lyapunov_filename, show)
-
-
-@timeit
-def show_bifurcation_diagram_2d_(gamma, sigmas, attractors, filename=None, show=True):
     points_sets = []
-
+    lyapunov_origins_array = []
     for attractor in attractors:
         origin = np.array(list(attractor)[0])
         points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas, steps_count=150)
+
         points_set = model.get_parametrized_points(sigmas, points_restarting)
+
+        lyapunov_origins = points_restarting[:, :, -1]
+        lyapunov_origins_array.append(lyapunov_origins)
 
         points_sets.append(points_set)
 
+    show_bifurcation_diagram_2d(gamma, points_sets, biff_filename, show)
+
+    show_lyapunov_exponents_2d(gamma, sigmas, lyapunov_origins_array, lyapunov_filename, show)
+
+
+def show_bifurcation_diagram_2d(gamma, points_sets, filename, show):
     fig, axis = plt.subplots()
 
     plot.plot_bifurcation_diagram_2d(fig, axis, gamma, points_sets)
@@ -45,18 +48,16 @@ def show_bifurcation_diagram_2d_(gamma, sigmas, attractors, filename=None, show=
         plt.close()
 
 
-@timeit
-def show_lyapunov_exponents_2d_(gamma: float, sigmas, attractors, filename=None, show=True):
+def show_lyapunov_exponents_2d(gamma, sigmas, origins, filename, show):
     lyapunov_exponents_array = []
 
-    for attractor in attractors:
-        origin = np.array(list(attractor)[0])
-        points_restarting = model.get_points_by_sigmas(origin, gamma, sigmas)
+    np_origins = np.array(origins)
+    lyapunov_exponents = model.get_lyapunov_exponents_2d(gamma, np_origins, sigmas)
 
-        lyapunov_origins = points_restarting[:, :, 0]
-        lyapunov_exponents = model.get_lyapunov_exponents_2d(gamma, lyapunov_origins, sigmas)
-        lyapunov_exponents = lyapunov_exponents.T
-        lyapunov_exponents_array.append(lyapunov_exponents)
+    for i in range(len(origins)):
+        exps = lyapunov_exponents[:, i]
+        lyapunov_exponent = np.stack((sigmas, exps), axis=0)
+        lyapunov_exponents_array.append(lyapunov_exponent)
 
     fig, axis = plt.subplots()
 

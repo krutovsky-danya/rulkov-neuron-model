@@ -1,5 +1,5 @@
 import math
-from typing import Generator, Tuple, Any
+from typing import Generator, Tuple, Any, Union
 
 import numpy as np
 from numba import njit, int32, float32
@@ -218,7 +218,7 @@ COUPLING = np.array([[-1, 1], [1, -1]])
 
 
 @njit()
-def same_coupling_f(point: np.ndarray, alfa=4.1, gamma=0.8, sigma=0.1) -> np.ndarray:
+def same_coupling_f(point: np.ndarray, alfa=4.1, gamma=0.8, sigma: Union[float, np.ndarray] = 0.1) -> np.ndarray:
     move: np.ndarray = f(point, alfa, gamma)
     x, y = point
     delta = y - x
@@ -501,40 +501,34 @@ def get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p,
             yield ellipses
 
 
-def get_lyapunov_exponent_2d(gamma: float, sigma: float, origin: np.ndarray, delta=1e-8, steps_count=1000):
-    ps = np.zeros(steps_count)
-    r = (2 ** -0.5) * np.array([delta, delta])
+@timeit
+def get_lyapunov_exponents_2d(gamma: float, origins: np.ndarray, sigmas: np.ndarray, delta=1e-9, steps=1000):
+    n_starts, n_sigmas, n_dimensions = origins.shape
 
-    x = np.round(origin, 9)
-    xs = get_points_2d(x, gamma, sigma, take=steps_count, skip=1)
+    points = np.round(origins, 9).T
 
-    xv = x + r
+    sigmas_ = np.broadcast_to(sigmas, (n_starts, n_sigmas)).T
+    sigmas_v = np.broadcast_to(sigmas_, points.shape)
 
-    for k in range(steps_count):
+    xs = get_points_2d(points, gamma, sigmas_v, take=steps, skip=1)
+
+    r = (2 ** -0.5) * delta * np.ones(points.shape)
+    ps = np.zeros((steps, n_sigmas, n_starts))
+    xv = points + r
+    for k in range(steps):
         x = xs[k]
-        xv_ = same_coupling_f(xv, gamma=gamma, sigma=sigma)
+        xv_ = same_coupling_f(xv, gamma=gamma, sigma=sigmas_v)
 
         d = xv_ - x
-        # d_norm = np.linalg.norm(d)
-        d_norm = np.sqrt((d ** 2).sum())
+        d_norm = np.linalg.norm(d, axis=0)
 
-        xv = x + d / d_norm * delta
+        normalized_d = d / d_norm
+
+        xv = x + normalized_d * delta
+
         ps[k] = d_norm / delta
 
-    lyapunov_exponent = np.log(ps).mean()
-
-    return lyapunov_exponent
-
-
-@timeit
-def get_lyapunov_exponents_2d(gamma: float, origins: np.ndarray, sigmas: np.ndarray, delta=1e-9, steps_count=1000):
-    lyapunov_exponents = np.zeros(len(sigmas))
-
-    for i, (sigma, origin) in enumerate(zip(sigmas, origins)):
-        lyapunov_exponent = get_lyapunov_exponent_2d(gamma, sigma, origin, delta=delta, steps_count=steps_count)
-        lyapunov_exponents[i] = lyapunov_exponent
-
-    lyapunov_exponents = np.stack((sigmas, lyapunov_exponents), axis=1)
+    lyapunov_exponents = np.log(ps).mean(axis=0)
 
     return lyapunov_exponents
 
@@ -543,12 +537,10 @@ def get_synchronization_indicator(trace: np.ndarray):
     trace = trace.T
     d_trace = trace[1:] - trace[:-1]
 
-    zs = []
-    for dx, dy in d_trace:
-        z = sign(dx * dy)
-        zs.append(z)
+    dxs, dys = d_trace.T
+    zs = np.sign(dxs * dys)
 
-    return np.array(zs)
+    return zs
 
 
 def main():
