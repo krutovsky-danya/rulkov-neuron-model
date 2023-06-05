@@ -506,7 +506,7 @@ def get_lyapunov_exponent_2d(gamma: float, sigma: float, origin: np.ndarray, del
     r = (2 ** -0.5) * np.array([delta, delta])
 
     x = np.round(origin, 9)
-    xs = get_points(x, gamma, sigma, take=steps_count, skip=1).T
+    xs = get_points_2d(x, gamma, sigma, take=steps_count, skip=1)
 
     xv = x + r
 
