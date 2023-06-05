@@ -1,11 +1,11 @@
 import os
 
-import imageio
 import cv2
+import imageio
 import numpy as np
 
 import model
-from TwoDimensionalDeterministic import show_bifurcation_diagram_2d, show_lyapunov_exponents_2d, show_only_pool
+from TwoDimensionalDeterministic import show_only_pool, show_bifurcation_diagram_and_lyapunov_exponents_2d
 
 
 def build_gif(gif_name, filenames):
@@ -31,36 +31,33 @@ def build_video(gif_name, filenames):
     out.release()
 
 
-def make_bif_diagram_movie(movie_name, gammas, sigmas_count=201):
-    filenames = []
+def make_bif_diagram_and_lyapunov_exponents_movie(name, gammas, sigmas_count):
+    bif_filenames = []
+    lyapunov_filenames = []
+
     sigmas_for_bifurcation = np.linspace(0.48, 0, sigmas_count)
 
-    os.makedirs(f'animations/sources/{movie_name}', exist_ok=True)
+    bif_movie_name = name + '_bifurcation_diagram'
+    lyapunov_movie_name = name + '_lyapunov_exponents'
+
+    bif_folder = f'animations/sources/{bif_movie_name}'
+    lyapunov_folder = f'animations/sources/{lyapunov_movie_name}'
+
+    os.makedirs(bif_folder, exist_ok=True)
+    os.makedirs(lyapunov_folder, exist_ok=True)
 
     for i, gamma in enumerate(gammas):
-        filename = f'animations/sources/{movie_name}/diagram_{i:04d}.png'
-        filenames.append(filename)
-        show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation, filename, show=False)
+        bif_filename = f'{bif_folder}/diagram_{i:04d}.png'
+        bif_filenames.append(bif_filename)
 
-    build_video(f"animations/{movie_name}.mov", filenames)
+        lyapunov_filename = f'{lyapunov_folder}/exponents_{i:04d}.png'
+        lyapunov_filenames.append(lyapunov_filename)
 
-    print(f"Complete making {movie_name} animation")
+        show_bifurcation_diagram_and_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, bif_filename,
+                                                           lyapunov_filename, show=False)
 
-
-def make_lyapunov_exponent_movie(movie_name, gammas, sigmas_count=201):
-    filenames = []
-    sigmas_for_bifurcation = np.linspace(0.48, 0, sigmas_count)
-
-    os.makedirs(f'animations/sources/{movie_name}', exist_ok=True)
-
-    for i, gamma in enumerate(gammas):
-        filename = f'animations/sources/{movie_name}/diagram_{i:04d}.png'
-        filenames.append(filename)
-        show_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, filename, show=False)
-
-    build_video(f"animations/{movie_name}.mov", filenames)
-
-    print(f"Complete making {movie_name} animation")
+    build_video(f"animations/{bif_movie_name}.mov", bif_filenames)
+    build_video(f"animations/{lyapunov_movie_name}.mov", lyapunov_filenames)
 
 
 def make_cool_zooming_movie(gamma, sigma, point, radius, ratio=0.9, frames=60):
@@ -139,16 +136,13 @@ def build_attraction_pool_moving_gamma_movie(gammas, config: model.AttractionPoo
 
 def make_all_animations():
     _gammas = np.linspace(-0.91, 1, 192)
-    make_bif_diagram_movie('bif_diagrams', _gammas, sigmas_count=2001)
-    make_lyapunov_exponent_movie('lyapunov_exponents', _gammas, sigmas_count=2001)
+    make_bif_diagram_and_lyapunov_exponents_movie('behavior', _gammas, sigmas_count=2001)
 
     _gammas = np.linspace(-5, -1, 401)
-    make_bif_diagram_movie('investigation_of_big_diagrams', _gammas, sigmas_count=2001)
-    make_lyapunov_exponent_movie('investigation_of_lyapunov_exponents', _gammas, sigmas_count=2001)
+    make_bif_diagram_and_lyapunov_exponents_movie('investigation', _gammas, sigmas_count=2001)
 
     _gammas = np.linspace(-3.46, -3.45, 201)  # gamma = -3.452 is interesting
-    make_bif_diagram_movie('interesting_bif_diagrams', _gammas, sigmas_count=2001)
-    make_lyapunov_exponent_movie('interesting_lyapunov_exponents', _gammas, sigmas_count=2001)
+    make_bif_diagram_and_lyapunov_exponents_movie('interesting', _gammas, sigmas_count=2001)
 
     center = np.array([0.97686, 0.97686])
     make_cool_zooming_movie(-1.1211, 0.1, center, 1, frames=120)

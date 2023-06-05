@@ -496,7 +496,7 @@ def get_confidence_ellipses_for_attractors(attractors, gamma, sigma, epsilon, p,
             if k > k_max:
                 continue
 
-            k_cycle = get_points(np.array(k_cycle[0]), gamma, sigma, k, 200).T
+            k_cycle = get_points_2d(np.array(k_cycle[0]), gamma, sigma, 200, k)
             ellipses = get_confidence_ellipses_for_k_cycle(sigma, epsilon, p, k_cycle)
             yield ellipses
 
@@ -526,6 +526,7 @@ def get_lyapunov_exponent_2d(gamma: float, sigma: float, origin: np.ndarray, del
     return lyapunov_exponent
 
 
+@timeit
 def get_lyapunov_exponents_2d(gamma: float, origins: np.ndarray, sigmas: np.ndarray, delta=1e-9, steps_count=1000):
     lyapunov_exponents = np.zeros(len(sigmas))
 
@@ -533,7 +534,7 @@ def get_lyapunov_exponents_2d(gamma: float, origins: np.ndarray, sigmas: np.ndar
         lyapunov_exponent = get_lyapunov_exponent_2d(gamma, sigma, origin, delta=delta, steps_count=steps_count)
         lyapunov_exponents[i] = lyapunov_exponent
 
-    lyapunov_exponents = np.dstack((sigmas, lyapunov_exponents))
+    lyapunov_exponents = np.stack((sigmas, lyapunov_exponents), axis=1)
 
     return lyapunov_exponents
 

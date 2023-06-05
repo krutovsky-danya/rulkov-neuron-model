@@ -6,12 +6,23 @@ import matplotlib.pyplot as plt
 import model
 import plot
 
+from infrastructure import timeit
 
-def show_bifurcation_diagram_2d(gamma: float, sigmas, filename=None, show=True):
-    num = 7
+
+@timeit
+def show_bifurcation_diagram_and_lyapunov_exponents_2d(gamma, sigmas, biff_filename, lyapunov_filename, show=True):
+    num = 70
     edges = (-5, 5)
     config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num)
     _, attractors = model.get_attraction_pool(config)
+
+    show_bifurcation_diagram_2d_(gamma, sigmas, attractors, biff_filename, show)
+
+    show_lyapunov_exponents_2d_(gamma, sigmas, attractors, lyapunov_filename, show)
+
+
+@timeit
+def show_bifurcation_diagram_2d_(gamma, sigmas, attractors, filename=None, show=True):
     points_sets = []
 
     for attractor in attractors:
@@ -34,11 +45,8 @@ def show_bifurcation_diagram_2d(gamma: float, sigmas, filename=None, show=True):
         plt.close()
 
 
-def show_lyapunov_exponents_2d(gamma: float, sigmas, filename=None, show=True):
-    num = 7
-    edges = (-5, 5)
-    config = model.AttractionPoolConfiguration(gamma, sigmas.max(), edges, edges, num)
-    _, attractors = model.get_attraction_pool(config)
+@timeit
+def show_lyapunov_exponents_2d_(gamma: float, sigmas, attractors, filename=None, show=True):
     lyapunov_exponents_array = []
 
     for attractor in attractors:
@@ -126,8 +134,9 @@ def show_only_pool(config, filename: str, show=True, cmap='Greens_r'):
 def show_monostable_neuron_coupling():
     gamma = 0.7
     sigmas_for_bifurcation = np.linspace(0.48, 0, 2001)
-    show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation, f'images/2d/bif_2d_gamma_is_{gamma}.png')
-    show_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, f'images/2d/lyapunov_gamma_is_{gamma}.png')
+    bif_filename = f'images/2d/bif_2d_gamma_is_{gamma}.png'
+    lyapunov_filename = f'images/2d/lyapunov_gamma_is_{gamma}.png'
+    show_bifurcation_diagram_and_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, bif_filename, lyapunov_filename)
 
     edges = (-3, 8)
     config = model.AttractionPoolConfiguration(gamma, 0.03, edges, (-3, 8.1), 50)
@@ -140,8 +149,9 @@ def show_monostable_neuron_coupling():
 def show_bistable_neuron_coupling():
     gamma = -0.7
     sigmas_for_bifurcation = np.linspace(0.48, 0, 2001)
-    show_bifurcation_diagram_2d(gamma, sigmas_for_bifurcation, f'images/2d/bifurcation_with_two_cycled.png')
-    show_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, f'images/2d/lyapunov_gamma_is_{gamma}.png')
+    bif_filename = f'images/2d/bifurcation_with_two_cycled.png'
+    lyapunov_filename = f'images/2d/lyapunov_gamma_is_{gamma}.png'
+    show_bifurcation_diagram_and_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, bif_filename, lyapunov_filename)
 
     edges = (-5, 5)
 
