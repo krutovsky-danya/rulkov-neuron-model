@@ -60,9 +60,9 @@ def make_bif_diagram_and_lyapunov_exponents_movie(name, gammas, sigmas_count):
     build_video(f"animations/{lyapunov_movie_name}.mov", lyapunov_filenames)
 
 
-def make_cool_zooming_movie(gamma, sigma, point, radius, ratio=0.9, frames=60):
+def make_cool_zooming_movie(gamma, sigma, point, radius, ratio=0.99, frames=60):
     filenames = []
-    directory_name = f'zooming_gamma_is_{gamma}_sigma_is_{sigma}'
+    directory_name = f'zooming_gamma_is_{gamma}_sigma_is_{sigma}_ratio_is_{ratio}'
     source_folder = f'animations/sources/{directory_name}'
     os.makedirs(source_folder, exist_ok=True)
     ready_filenames = os.listdir(source_folder)
@@ -72,14 +72,14 @@ def make_cool_zooming_movie(gamma, sigma, point, radius, ratio=0.9, frames=60):
 
         x_border = (x - radius, x + radius)
         y_border = (y - radius, y + radius)
-        config = model.AttractionPoolConfiguration(gamma, sigma, x_border, y_border, 250)
+        config = model.AttractionPoolConfiguration(gamma, sigma, x_border, y_border, 800)
         filename = f'image_zoom_{i:04d}.png'
         file_path = f'{source_folder}/{filename}'
 
         if filename not in ready_filenames:
             show_only_pool(config, filename=file_path, show=False)
 
-        for j in range(3):
+        for j in range(1):
             filenames.append(file_path)
 
         radius *= ratio
@@ -119,10 +119,10 @@ def build_attraction_pool_moving_gamma_movie(gammas, config: model.AttractionPoo
 
     for i, gamma in enumerate(gammas):
         config.gamma = gamma
-        filename = f'image_{i}.png'
+        filename = f'image_{i:04d}.png'
         file_path = f'{source_folder}/{filename}'
 
-        if ready_files not in ready_files:
+        if filename not in ready_files:
             show_only_pool(config, filename=file_path, show=False)
 
         filenames.append(file_path)

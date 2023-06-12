@@ -111,6 +111,8 @@ def plot_bifurcation_diagram_2d(fig: plt.Figure, axis: plt.Axes, gamma, points_s
     axis.set_xlabel('$\\sigma$', size=20)
     axis.set_ylabel('$x$', size=20, rotation=0)
 
+    axis.set_ylim(-5, 7)
+
     return fig, axis
 
 
@@ -148,6 +150,8 @@ def plot_lyapunov_exponents_2d(fig: plt.Figure, axis: plt.Axes, gamma, lyapunov_
     axis.set_title(f'$\\gamma={gamma:.4f}$', size=20)
     axis.set_xlabel('$\\Lambda$', size=20)
     axis.set_ylabel('$x$', size=20, rotation=0)
+
+    axis.set_ylim(-6, 2)
 
     for lyapunov_exponents in lyapunov_exponents_array:
         axis.plot(*lyapunov_exponents)

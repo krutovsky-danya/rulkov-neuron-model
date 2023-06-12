@@ -415,6 +415,10 @@ def solve_stochastic_sensitivity_matrix(function_derivative_by_point, q):
 def get_confidence_ellipse_for_point(point, m, epsilon, p):
     w, v = np.linalg.eig(m)
     k = (-np.log(1 - p)) ** 0.5
+
+    if np.any(w < 0):
+        return np.zeros(0)
+
     z = (2 * w) ** 0.5 * epsilon * k
 
     t = np.linspace(0, 2 * math.pi, 100)

@@ -109,7 +109,7 @@ def show_2d_stochastic_equilibrium_graphics():
     gamma = 0.7
     sigma = 0.01
     border = (1.7, 1.775)
-    density = 50
+    density = 5
 
     epsilon = 0.001
     p = 0.95

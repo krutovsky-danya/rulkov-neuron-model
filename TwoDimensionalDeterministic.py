@@ -140,8 +140,8 @@ def show_monostable_neuron_coupling():
     show_bifurcation_diagram_and_lyapunov_exponents_2d(gamma, sigmas_for_bifurcation, bif_filename, lyapunov_filename)
 
     edges = (-3, 8)
-    config = model.AttractionPoolConfiguration(gamma, 0.03, edges, (-3, 8.1), 50)
-    show_only_pool(config, filename=f'images/2d/attraction_pool_single_point.png')
+    config = model.AttractionPoolConfiguration(gamma, 0.03, edges, (-3.01, 8.1), 250, take=100)
+    show_only_pool(config, filename=f'images/2d/attraction_pool_single_point.png', cmap='Greens')
 
     config = model.AttractionPoolConfiguration(gamma, 0.2, edges, edges, 500)
     show_attraction_pool(config, f'images/2d/attraction_pool_two_cycle.png', cmap='Greens_r')
