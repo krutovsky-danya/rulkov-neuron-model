@@ -135,7 +135,7 @@ def build_attraction_pool_moving_gamma_movie(gammas, config: model.AttractionPoo
 
 
 def make_all_animations():
-    _gammas = np.linspace(-0.91, 1, 192)
+    _gammas = np.linspace(-0.5, 1, 151)
     make_bif_diagram_and_lyapunov_exponents_movie('behavior', _gammas, sigmas_count=2001)
 
     _gammas = np.linspace(-5, -1, 401)
@@ -144,11 +144,16 @@ def make_all_animations():
     _gammas = np.linspace(-3.46, -3.45, 201)  # gamma = -3.452 is interesting
     make_bif_diagram_and_lyapunov_exponents_movie('interesting', _gammas, sigmas_count=2001)
 
+    x = 0.97686
+    gamma = x - 4.1 / (1 + x * x)
+    center = np.array([x, x])
+    make_cool_zooming_movie(gamma, 0.1, center, 1, 0.95, frames=120)
+
     center = np.array([0.97686, 0.97686])
-    make_cool_zooming_movie(-1.1211, 0.1, center, 1, frames=120)
+    make_cool_zooming_movie(-1.1211, 0.1, center, 1, 1.05, frames=120)
 
     _sigmas = np.linspace(0, 0.48, 48 * 2 + 1)
-    _config = model.AttractionPoolConfiguration(0.7, 0, (-3, 6), (-3, 6), 50)
+    _config = model.AttractionPoolConfiguration(0.7, 0, (-4, 8), (-4, 8), 250)
     make_pool_on_sigmas_movie(_config, _sigmas)
 
     _gammas = np.linspace(-1, -1.2, 201)

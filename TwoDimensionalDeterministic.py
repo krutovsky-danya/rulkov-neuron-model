@@ -120,8 +120,12 @@ def show_only_pool(config, filename: str, show=True, cmap='Greens_r'):
 
     plot.configure_attraction_pool_figure(fig, config.gamma, config.sigma)
     plot.plot_attraction_pool(fig, axis, heatmap, extent, cmap)
-    for trace in traces:
-        axis.plot(*trace, '.', markersize=10)
+    for i, trace in enumerate(traces):
+        if attractors[i].shape[1] > config.take / 2:
+            color = 'pink'
+        else:
+            color = None
+        axis.plot(*trace, '.', markersize=10, color=color)
 
     if filename is not None:
         plt.savefig(filename)
